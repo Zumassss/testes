@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /* Verde-esmeralda "vivo", nao neon: base para todos os detalhes. */
+  --color-sonora-50: #eefaf3;
+  --color-sonora-100: #d3f2e0;
+  --color-sonora-300: #6fdca2;
+  --color-sonora-400: #2ecc71;
+  --color-sonora-500: #00c853;
+  --color-sonora-600: #00a34a;
+  --color-sonora-700: #00813c;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #ffffff;
+}
