@@ -1,180 +1,282 @@
+import { fbm3, noise3 } from './noise.js'
+
 /**
- * Geracao procedural da nuvem de pontos do cerebro.
+ * Nuvem de pontos do cerebro.
  *
- * A silhueta nasce da UNIAO de elipsoides (um lobo cada): amostramos a
- * superficie de um lobo e descartamos o que cai dentro de outro, o que
- * produz as reentrancias entre lobos em vez de uma bola lisa.
+ * A forma vem de um SDF (campo de distancia) montado por uniao SUAVE de
+ * elipsoides — nao por interseccao/descarte. Uniao suave e o que produz as
+ * transicoes organicas entre lobos; descarte produzia degraus.
  *
- * Sobre essa base vem o que realmente faz o objeto ser lido como cerebro:
- * giros e sulcos coerentes (faixas paralelas, nao ruido) e as duas
- * fissuras marcantes — a de Sylvius, que separa o lobo temporal do resto,
- * e a longitudinal, que separa os hemisferios.
+ * As duas fissuras que fazem o objeto ser lido como cerebro na hora — a de
+ * Sylvius e a central — sao ESCULPIDAS: uma capsula e subtraida do campo,
+ * abrindo um vale de verdade na superficie.
+ *
+ * Os giros vem de um campo de dobramento (ruido deformado) fatiado em
+ * faixas. O ponto e o vazio: os pontos do fundo do sulco sao removidos, e
+ * e esse vazio que desenha a circunvolucao.
+ *
+ * Eixos: +x lateral direito, +y cima, +z frente (anterior).
  */
 
-/** Lobos de UM hemisferio (lado +x). O hemisferio esquerdo e o espelho. */
-const LOBES = [
-  { c: [0.17, 0.1, 0.44], r: [0.21, 0.27, 0.3], kind: 'cortex' }, // frontal
-  { c: [0.19, 0.21, 0.06], r: [0.22, 0.28, 0.3], kind: 'cortex' }, // pre-central
-  { c: [0.19, 0.16, -0.26], r: [0.21, 0.27, 0.31], kind: 'cortex' }, // parietal
-  { c: [0.16, -0.04, -0.5], r: [0.19, 0.23, 0.24], kind: 'cortex' }, // occipital
-  { c: [0.24, -0.24, 0.06], r: [0.15, 0.16, 0.34], kind: 'cortex' }, // temporal
-  { c: [0.14, -0.38, -0.44], r: [0.17, 0.13, 0.18], kind: 'cerebellum' },
+/* ------------------------------------------------------------------ *
+ * primitivas                                                          *
+ * ------------------------------------------------------------------ */
+
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
+
+/** uniao suave (polinomial) — a "cola" organica entre os lobos */
+function smin(a, b, k) {
+  const h = clamp01(0.5 + (0.5 * (b - a)) / k)
+  return b + (a - b) * h - k * h * (1 - h)
+}
+
+/** subtracao suave: abre um vale em vez de um corte reto */
+function smaxSub(d, cut, k) {
+  const h = clamp01(0.5 + (0.5 * (d + cut)) / k)
+  return -cut + (d + cut) * h + k * h * (1 - h)
+}
+
+/** elipsoide (aproximacao de iq — gradiente estavel o bastante) */
+function sdEllipsoid(px, py, pz, cx, cy, cz, rx, ry, rz) {
+  const ax = px - cx
+  const ay = py - cy
+  const az = pz - cz
+  const dx = ax / rx
+  const dy = ay / ry
+  const dz = az / rz
+  const k0 = Math.sqrt(dx * dx + dy * dy + dz * dz)
+  if (k0 < 1e-6) return -Math.min(rx, ry, rz)
+  const ex = ax / (rx * rx)
+  const ey = ay / (ry * ry)
+  const ez = az / (rz * rz)
+  const k1 = Math.sqrt(ex * ex + ey * ey + ez * ez)
+  return (k0 * (k0 - 1)) / k1
+}
+
+/** cone arredondado: tronco encefalico e as capsulas que esculpem sulcos */
+function sdCone(px, py, pz, ax, ay, az, bx, by, bz, ra, rb) {
+  const vx = bx - ax
+  const vy = by - ay
+  const vz = bz - az
+  const wx = px - ax
+  const wy = py - ay
+  const wz = pz - az
+  const vv = vx * vx + vy * vy + vz * vz
+  const t = clamp01((wx * vx + wy * vy + wz * vz) / vv)
+  const cx = wx - vx * t
+  const cy = wy - vy * t
+  const cz = wz - vz * t
+  return Math.sqrt(cx * cx + cy * cy + cz * cz) - (ra + (rb - ra) * t)
+}
+
+/* ------------------------------------------------------------------ *
+ * anatomia                                                            *
+ * ------------------------------------------------------------------ */
+
+/* Lobos de UM hemisferio. O outro lado e o espelho em x. */
+const CORTEX = [
+  [0.245, 0.045, 0.0, 0.3, 0.375, 0.55], // massa central
+  [0.215, 0.02, 0.335, 0.275, 0.325, 0.36], // polo frontal
+  [0.245, 0.145, -0.155, 0.285, 0.335, 0.415], // parietal
+  [0.195, -0.085, -0.44, 0.235, 0.265, 0.295], // occipital
 ]
 
-// peso de amostragem proporcional a area aproximada de cada elipsoide
-const LOBE_CDF = (() => {
-  const w = LOBES.map(({ r }) => r[0] * r[1] + r[1] * r[2] + r[0] * r[2])
-  const total = w.reduce((a, b) => a + b, 0)
-  let acc = 0
-  return w.map((v) => (acc += v / total))
-})()
+const TEMPORAL = [0.315, -0.275, 0.1, 0.175, 0.155, 0.34]
+const CEREBELLUM = [0.2, -0.375, -0.44, 0.245, 0.185, 0.245]
 
-function insideOtherLobe(x, y, z, skip) {
-  for (let k = 0; k < LOBES.length; k++) {
-    if (k === skip) continue
-    const { c, r } = LOBES[k]
-    const dx = (x - c[0]) / r[0]
-    const dy = (y - c[1]) / r[1]
-    const dz = (z - c[2]) / r[2]
-    if (dx * dx + dy * dy + dz * dz < 0.97) return true
+/** Distancia ao cerebro. Vale para x >= 0; o lado esquerdo e espelhado. */
+export function brainSDF(x, y, z) {
+  /* cortex: uniao bem suave — os lobos sao um continuo, nao pecas coladas */
+  let d = sdEllipsoid(x, y, z, ...CORTEX[0])
+  for (let i = 1; i < CORTEX.length; i++) {
+    d = smin(d, sdEllipsoid(x, y, z, ...CORTEX[i]), 0.17)
   }
-  return false
+
+  /* temporal entra com k pequeno: precisa sobrar a dobra que vira Sylvius */
+  d = smin(d, sdEllipsoid(x, y, z, ...TEMPORAL), 0.05)
+
+  /* cerebelo: massa propria, quase destacada */
+  d = smin(d, sdEllipsoid(x, y, z, ...CEREBELLUM), 0.032)
+
+  /* fissura longitudinal: aberta em cima, fechando em direcao ao corpo
+     caloso — por isso a folga cresce com a altura */
+  const gap = 0.032 * clamp01((y + 0.2) / 0.34)
+  d = Math.max(d, gap - x)
+
+  /* tronco encefalico depois do corte medial: ele fica NA linha media */
+  d = smin(d, sdCone(x, y, z, 0, -0.12, -0.04, 0, -0.62, -0.28, 0.115, 0.062), 0.07)
+
+  /* Fissura de Sylvius — o vale que separa o temporal do resto. A capsula
+     precisa correr RENTE a superficie lateral (x alto), senao ela passa por
+     dentro da massa e nao abre nada. */
+  /* as duas pontas passam PARA FORA da massa: se terminassem dentro, a
+     ponta arredondada da capsula viraria uma cratera circular na lateral */
+  d = smaxSub(
+    d,
+    sdCone(x, y, z, 0.5, -0.17, 0.5, 0.3, 0.07, -0.46, 0.062, 0.048),
+    0.04,
+  )
+
+  /* sulco central — desce da linha media para a frente e para o lado */
+  d = smaxSub(
+    d,
+    sdCone(x, y, z, 0.07, 0.45, -0.12, 0.45, -0.03, 0.1, 0.042, 0.036),
+    0.03,
+  )
+
+  return d
 }
 
+function normalAt(x, y, z, out) {
+  const e = 0.0035
+  const nx = brainSDF(x + e, y, z) - brainSDF(x - e, y, z)
+  const ny = brainSDF(x, y + e, z) - brainSDF(x, y - e, z)
+  const nz = brainSDF(x, y, z + e) - brainSDF(x, y, z - e)
+  const len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1
+  out[0] = nx / len
+  out[1] = ny / len
+  out[2] = nz / len
+}
+
+/* ------------------------------------------------------------------ *
+ * dobramento cortical                                                 *
+ * ------------------------------------------------------------------ */
+
 /**
- * Campo de giros: faixas paralelas que serpenteiam pela superficie.
- * Retorna 0 no fundo do sulco e 1 no topo do giro.
+ * Campo de giros. Um ruido de baixa frequencia deformado por outro ruido
+ * gera um potencial; fatiar esse potencial em faixas da circunvolucoes que
+ * serpenteiam em vez de listras retas.
+ *
+ * @returns 0 no fundo do sulco, 1 no topo do giro
  */
 function gyriField(x, y, z) {
-  const wander =
-    0.55 * Math.sin(5.3 * x + 1.7) +
-    0.42 * Math.sin(4.1 * z - 0.6) +
-    0.3 * Math.sin(6.7 * y + 2.4)
-  const band = Math.sin(15.5 * (0.72 * z + 0.52 * y - 0.2 * x) + wander)
-  return Math.pow(Math.abs(band), 0.65)
+  /* deformacao de baixa frequencia: e ela que faz a faixa serpentear */
+  const w = fbm3(x * 1.5 + 11.3, y * 1.5 - 4.1, z * 1.5 + 7.7)
+
+  /* UMA oitava so no potencial. Com fbm cheio as isolinhas picotam e o
+     resultado le como ruido; com ruido liso elas viram vales continuos. */
+  const n = noise3(x * 2.4 + w * 0.9, y * 2.2 + w * 0.9 + 20.5, z * 2.4 + w * 0.9)
+
+  /* rampa em y: da aos giros a direcao antero-posterior dominante do
+     cortex, com o ruido por cima quebrando a regularidade */
+  const g = n * 0.72 + y * 0.62 - z * 0.12
+
+  return Math.pow(Math.abs(Math.sin(g * 31)), 0.55)
 }
 
-/**
- * Fissura de Sylvius: sulco profundo que corre pela lateral, separando o
- * lobo temporal do frontal/parietal. E a marca que faz o perfil ser lido
- * como cerebro na hora.
- */
-function sylvianDepth(x, y, z) {
-  const line = y + 0.1 + 0.16 * z - 0.1 * Math.sin(3.2 * z)
-  const lateral = Math.min(1, Math.max(0, (Math.abs(x) - 0.1) / 0.16))
-  return Math.exp(-(line * line) / 0.0022) * lateral
+/** Folias do cerebelo: estrias muito mais finas e paralelas que os giros. */
+function foliaField(x, y, z) {
+  const jitter = noise3(x * 6, y * 6, z * 6) * 0.5
+  return Math.pow(Math.abs(Math.sin(y * 78 + z * 12 + jitter)), 0.6)
 }
+
+/* ------------------------------------------------------------------ *
+ * geracao da nuvem                                                    *
+ * ------------------------------------------------------------------ */
+
+const BOX = { x0: 0, x1: 0.68, y0: -0.76, y1: 0.62, z0: -0.84, z1: 0.8 }
+const SHELL = 0.03
+const SCALE = 1.42
 
 /**
  * @param {number} count numero alvo de pontos
- * @returns {{positions: Float32Array, scales: Float32Array, seeds: Float32Array, drawCount: number}}
+ * @returns {{positions: Float32Array, normals: Float32Array, scales: Float32Array,
+ *            seeds: Float32Array, tints: Float32Array, drawCount: number}}
  */
 export function buildBrainCloud(count) {
   const positions = new Float32Array(count * 3)
+  const normals = new Float32Array(count * 3)
   const scales = new Float32Array(count)
   const seeds = new Float32Array(count)
+  const tints = new Float32Array(count)
 
-  const SCALE = 1.5
-  const STEM_SHARE = 0.045
+  const n = [0, 0, 0]
+  const bx = BOX.x1 - BOX.x0
+  const by = BOX.y1 - BOX.y0
+  const bz = BOX.z1 - BOX.z0
 
   let i = 0
   let guard = 0
+  const maxTries = count * 260
 
-  while (i < count && guard < count * 80) {
+  while (i < count && guard < maxTries) {
     guard++
-    let x, y, z
-    let onCortex = false
 
-    if (Math.random() < STEM_SHARE) {
-      /* --- tronco encefalico: cilindro curto e afunilado --- */
-      const t = Math.random()
-      const radius = (0.095 - 0.04 * t) * (0.72 + 0.28 * Math.random())
-      const a = Math.random() * Math.PI * 2
-      x = Math.cos(a) * radius
-      y = -0.26 - 0.34 * t
-      z = -0.12 - 0.14 * t + Math.sin(a) * radius
-      if (insideOtherLobe(Math.abs(x), y, z, -1)) continue
+    /* amostragem volumetrica: garante densidade uniforme por AREA, coisa
+       que projetar raios do centro nao daria (o polo perto do centro
+       ficaria com pontos demais) */
+    let x = BOX.x0 + Math.random() * bx
+    let y = BOX.y0 + Math.random() * by
+    let z = BOX.z0 + Math.random() * bz
+
+    const d = brainSDF(x, y, z)
+    if (d < -SHELL || d > SHELL) continue
+
+    /* gruda exatamente na superficie */
+    normalAt(x, y, z, n)
+    x -= n[0] * d
+    y -= n[1] * d
+    z -= n[2] * d
+
+    /* regiao: o cerebelo dobra diferente do cortex */
+    const cd = Math.hypot(
+      (x - CEREBELLUM[0]) / 0.34,
+      (y - CEREBELLUM[1]) / 0.26,
+      (z - CEREBELLUM[2]) / 0.34,
+    )
+    const isCerebellum = cd < 1
+    const isStem = y < -0.5 && Math.abs(x) < 0.13 && z < 0.05
+
+    let crest = 1
+    let depth = 0
+
+    if (isStem) {
+      crest = 0.7
+    } else if (isCerebellum) {
+      crest = foliaField(x, y, z)
+      if (crest < 0.3 && Math.random() < 0.8) continue
+      depth = -0.016 * (1 - crest)
     } else {
-      /* --- cortex / cerebelo: superficie da uniao de elipsoides --- */
-      const pick = Math.random()
-      let li = 0
-      while (li < LOBE_CDF.length - 1 && pick > LOBE_CDF[li]) li++
-      const lobe = LOBES[li]
+      crest = gyriField(x, y, z)
+      /* o vazio e que desenha o sulco: o fundo precisa abrir de verdade,
+         senao de longe a superficie vira ruido uniforme */
+      if (crest < 0.68 && Math.random() < 0.93) continue
+      depth = -0.06 * (1 - crest)
+    }
 
-      // direcao uniforme na esfera -> superficie da elipsoide
-      const u = Math.random() * 2 - 1
-      const theta = Math.random() * Math.PI * 2
-      const s = Math.sqrt(1 - u * u)
-      const nx = s * Math.cos(theta)
-      const ny = u
-      const nz = s * Math.sin(theta)
+    x += n[0] * depth
+    y += n[1] * depth
+    z += n[2] * depth
 
-      x = lobe.c[0] + nx * lobe.r[0]
-      y = lobe.c[1] + ny * lobe.r[1]
-      z = lobe.c[2] + nz * lobe.r[2]
+    /* espessura minima da casca — tira o aspecto de papel de parede */
+    const inset = -0.012 * Math.pow(Math.random(), 2)
+    x += n[0] * inset
+    y += n[1] * inset
+    z += n[2] * inset
 
-      if (insideOtherLobe(x, y, z, li)) continue
-
-      // normal externa aproximada da elipsoide
-      let gx = (x - lobe.c[0]) / (lobe.r[0] * lobe.r[0])
-      let gy = (y - lobe.c[1]) / (lobe.r[1] * lobe.r[1])
-      let gz = (z - lobe.c[2]) / (lobe.r[2] * lobe.r[2])
-      const glen = Math.hypot(gx, gy, gz) || 1
-      gx /= glen
-      gy /= glen
-      gz /= glen
-
-      if (lobe.kind === 'cerebellum') {
-        // folia: estrias horizontais bem mais finas que os giros do cortex
-        const folia = 0.02 * Math.sin(52 * y + 9 * z) - 0.008
-        x += gx * folia
-        y += gy * folia
-        z += gz * folia
-      } else {
-        onCortex = true
-
-        // giros e sulcos
-        const gyri = gyriField(x, y, z)
-        let depth = -0.055 * (1 - gyri)
-
-        // fissura de Sylvius, bem mais profunda que um sulco comum
-        const sylvian = sylvianDepth(x, y, z)
-        depth -= 0.085 * sylvian
-        // o fundo da fissura fica vazio: e o vazio que desenha o sulco
-        if (sylvian > 0.55 && Math.random() < 0.75) continue
-
-        x += gx * depth
-        y += gy * depth
-        z += gz * depth
-      }
-
-      // parede medial: achata o que invade a linha media (fissura longitudinal)
-      if (x < 0.032) {
-        if (Math.random() > 0.38) continue
-        x = 0.032 + Math.random() * 0.012
-      }
-
-      // espessura da casca — quase tudo na superficie
-      const inset = 1 - 0.055 * Math.pow(Math.random(), 2)
-      x *= inset
-      y *= inset
-      z *= inset
-
-      // espelha metade dos pontos para o hemisferio oposto
-      if (Math.random() < 0.5) x = -x
+    let sx = x
+    let snx = n[0]
+    if (Math.random() < 0.5) {
+      sx = -sx
+      snx = -snx
     }
 
     const idx = i * 3
-    positions[idx] = x * SCALE
-    positions[idx + 1] = (y + 0.08) * SCALE
+    positions[idx] = sx * SCALE
+    positions[idx + 1] = (y + 0.11) * SCALE
     positions[idx + 2] = z * SCALE
 
-    // pontos no topo dos giros ficam um tico maiores: da relevo a superficie
-    const relief = onCortex ? 0.85 + 0.35 * gyriField(x, y, z) : 1
-    scales[i] = (0.7 + Math.pow(Math.random(), 1.5) * 0.6) * relief
+    normals[idx] = snx
+    normals[idx + 1] = n[1]
+    normals[idx + 2] = n[2]
+
+    /* topo do giro pega mais luz: ponto maior e mais claro */
+    scales[i] = (0.62 + Math.pow(Math.random(), 1.6) * 0.5) * (0.78 + crest * 0.44)
     seeds[i] = Math.random()
+    tints[i] = crest * 0.7 + Math.random() * 0.3
+
     i++
   }
 
-  return { positions, scales, seeds, drawCount: i }
+  return { positions, normals, scales, seeds, tints, drawCount: i }
 }

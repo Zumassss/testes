@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { PerformanceMonitor, Preload } from '@react-three/drei'
+import { PerformanceMonitor } from '@react-three/drei'
 import * as THREE from 'three'
 import { buildBrainCloud } from '../lib/brainGeometry'
 
 /* Verde da marca aplicado as particulas. */
-const GREEN_NEAR = '#1d6a56' // pontos da frente: esmeralda profundo do logo
-const GREEN_FAR = '#a9d8c5' // pontos ao fundo: dissolvem no off-white
-const GREEN_GLOW = '#3fbf90' // realce sob o cursor
+const COLOR_NEAR = '#1a5f4d' // pontos da frente: esmeralda profundo do logo
+const COLOR_FAR = '#86c5aa' // pontos ao fundo: dissolvem no off-white
+const COLOR_GLOW = '#42c497' // realce sob o cursor e nos disparos
 
 const vertexShader = /* glsl */ `
   uniform float uTime;
@@ -22,23 +22,37 @@ const vertexShader = /* glsl */ `
   uniform float uMotion;
   uniform float uFadeNear;
   uniform float uFadeFar;
+  uniform float uDissolve;
 
+  attribute vec3  aNormal;
   attribute float aScale;
   attribute float aSeed;
+  attribute float aTint;
 
   varying float vGlow;
   varying float vDepth;
+  varying float vFront;
+  varying float vTint;
+  varying float vSpark;
 
   void main() {
     vec3 pos = position;
 
-    // respiracao lenta + micro-tremor: "rede neural viva"
+    // respiracao lenta ao longo da normal + micro-tremor: "rede viva"
     float ph = aSeed * 6.2831853;
-    pos += normalize(pos + 0.0001) * sin(uTime * 0.55 + ph) * 0.013 * uMotion;
-    pos.x += sin(uTime * 0.9 + ph * 2.1) * 0.004 * uMotion;
-    pos.y += cos(uTime * 0.8 + ph * 1.7) * 0.004 * uMotion;
+    pos += aNormal * sin(uTime * 0.42 + ph) * 0.012 * uMotion;
+    pos.x += sin(uTime * 0.7 + ph * 2.1) * 0.003 * uMotion;
+    pos.y += cos(uTime * 0.62 + ph * 1.7) * 0.003 * uMotion;
 
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+
+    // Quanto o ponto encara a camera. E isto que faz a nuvem ler como um
+    // objeto solido em vez de uma poeira: o que da as costas recua.
+    // A rampa comeca em -0.45 de proposito — cortar em zero apagaria a
+    // silhueta junto com o verso, e e a silhueta que desenha a forma.
+    vec3 nv = normalize(normalMatrix * aNormal);
+    vFront = smoothstep(-0.45, 0.18, dot(nv, normalize(-mv.xyz)));
+
     vec4 clip = projectionMatrix * mv;
     vec2 ndc = clip.xy / clip.w;
 
@@ -48,19 +62,26 @@ const vertexShader = /* glsl */ `
     float infl = smoothstep(uRadius, 0.0, dist) * uPointerActive;
     mv.xy += normalize(delta + vec2(1e-4)) * infl * uStrength * (-mv.z);
 
+    // disparos esparsos: 1 ponto em ~30 pulsa como uma sinapse
+    float spark = step(0.966, aSeed) * pow(max(0.0, sin(uTime * 1.4 + aSeed * 210.0)), 9.0);
+    vSpark = spark * uMotion;
+
     vGlow = infl;
     vDepth = -mv.z;
+    vTint = aTint;
 
     gl_Position = projectionMatrix * mv;
 
     // pontos ao fundo encolhem junto com o fade: reforca a profundidade
     float depth = clamp((vDepth - uFadeNear) / (uFadeFar - uFadeNear), 0.0, 1.0);
-    float shrink = mix(1.0, 0.72, depth);
+    float shrink = mix(1.0, 0.68, depth) * mix(0.5, 1.0, vFront);
 
     gl_PointSize = clamp(
-      uSize * uZoom * aScale * shrink * (1.0 + infl * 0.9) * uScale / max(-mv.z, 0.001),
-      1.0,
-      30.0
+      uSize * uZoom * aScale * shrink * uDissolve
+        * (1.0 + infl * 0.8 + vSpark * 1.6)
+        * uScale / max(-mv.z, 0.001),
+      1.4,
+      26.0
     );
   }
 `
@@ -75,32 +96,47 @@ const fragmentShader = /* glsl */ `
 
   varying float vGlow;
   varying float vDepth;
+  varying float vFront;
+  varying float vTint;
+  varying float vSpark;
 
   void main() {
     float d = length(gl_PointCoord - 0.5);
     if (d > 0.5) discard;
 
-    // nucleo nitido + halo suave = glow sem post-processing
+    // queda suave num unico termo: glow sem post-processing
     // (bloom aditivo lavaria o fundo claro da pagina)
-    float core = smoothstep(0.5, 0.14, d);
-    float halo = smoothstep(0.5, 0.0, d);
+    float sprite = smoothstep(0.5, 0.13, d);
 
     float depth = clamp((vDepth - uFadeNear) / (uFadeFar - uFadeNear), 0.0, 1.0);
-    depth = pow(depth, 1.25);
+    depth = pow(depth, 1.15);
+
+    // contraste forte entre frente e verso: e o que separa "objeto solido"
+    // de "poeira" no fundo claro
+    float facing = mix(0.07, 1.0, vFront);
 
     vec3 color = mix(uColorNear, uColorFar, depth);
-    color = mix(color, uColorGlow, clamp(vGlow * 1.4, 0.0, 1.0));
+    color = mix(color, uColorFar, (1.0 - facing) * 0.7);
+    // topo do giro clareia um tico: da relevo a superficie
+    color = mix(color, uColorGlow, vTint * 0.1);
+    color = mix(color, uColorGlow, clamp(vGlow * 1.3 + vSpark, 0.0, 1.0));
 
-    float alpha = (core * 0.9 + halo * 0.28) * uOpacity;
-    alpha *= mix(1.0, 0.18, depth);
-    alpha *= 1.0 + vGlow * 0.9;
+    float alpha = sprite * uOpacity * facing;
+    alpha *= mix(1.0, 0.26, depth);
+    alpha *= 1.0 + vGlow * 0.8 + vSpark * 0.9;
 
     gl_FragColor = vec4(color, clamp(alpha, 0.0, 1.0));
     #include <colorspace_fragment>
   }
 `
 
-const smoothstep01 = (t) => t * t * (3 - 2 * t)
+/* smootherstep: derivada zero nas duas pontas — a entrada e a saida da
+   coreografia nao "batem", elas assentam. */
+const ease = (t) => t * t * t * (t * (t * 6 - 15) + 10)
+
+/* Vista de 3/4 tirando para o perfil: e o angulo em que a fissura de
+   Sylvius e o cerebelo aparecem, ou seja, onde o objeto se le como cerebro. */
+const REST_YAW = -1.6
 
 function BrainParticles({ count, interactive, reducedMotion, pointSize, compact, progressRef }) {
   const groupRef = useRef()
@@ -110,7 +146,7 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
 
   const { gl, size, camera } = useThree()
 
-  const { positions, scales, seeds, drawCount } = useMemo(
+  const { positions, normals, scales, seeds, tints, drawCount } = useMemo(
     () => buildBrainCloud(count),
     [count],
   )
@@ -124,15 +160,16 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
       uAspect: { value: 1 },
       uPointer: { value: new THREE.Vector2(0, 0) },
       uPointerActive: { value: 0 },
-      uRadius: { value: 0.17 },
-      uStrength: { value: 0.012 },
+      uRadius: { value: 0.16 },
+      uStrength: { value: 0.01 },
       uMotion: { value: reducedMotion ? 0 : 1 },
-      uColorNear: { value: new THREE.Color(GREEN_NEAR) },
-      uColorFar: { value: new THREE.Color(GREEN_FAR) },
-      uColorGlow: { value: new THREE.Color(GREEN_GLOW) },
-      uOpacity: { value: 1.0 },
-      uFadeNear: { value: 3.55 },
-      uFadeFar: { value: 5.7 },
+      uDissolve: { value: 1 },
+      uColorNear: { value: new THREE.Color(COLOR_NEAR) },
+      uColorFar: { value: new THREE.Color(COLOR_FAR) },
+      uColorGlow: { value: new THREE.Color(COLOR_GLOW) },
+      uOpacity: { value: 1 },
+      uFadeNear: { value: 3.5 },
+      uFadeFar: { value: 5.8 },
     }),
     [reducedMotion, pointSize],
   )
@@ -140,12 +177,14 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    g.setAttribute('aNormal', new THREE.BufferAttribute(normals, 3))
     g.setAttribute('aScale', new THREE.BufferAttribute(scales, 1))
     g.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1))
+    g.setAttribute('aTint', new THREE.BufferAttribute(tints, 1))
     g.setDrawRange(0, drawCount)
     g.computeBoundingSphere()
     return g
-  }, [positions, scales, seeds, drawCount])
+  }, [positions, normals, scales, seeds, tints, drawCount])
 
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -165,14 +204,14 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
   // Posicao de repouso no hero. No desktop o cerebro ocupa a coluna da
   // direita; no mobile ele desce para o terco inferior — a tela e estreita
   // demais para dividir espaco com o texto — e encolhe para nao ser cortado.
-  const restX = compact ? 0 : 0.95
-  const restY = compact ? -1.02 : 0.12
-  const baseScale = compact ? 0.62 : 1
+  const restX = compact ? 0 : 0.86
+  const restY = compact ? -1.14 : 0.1
+  const baseScale = compact ? 0.55 : 0.86
 
   // destino no fim do scroll: desce para fora do enquadramento, deixando so
   // uma "linha do horizonte" de particulas embaixo do bloco de leitura
-  const exitY = compact ? -1.95 : -1.95
-  const maxZoom = compact ? 0.3 : 0.35
+  const exitY = -1.85
+  const maxZoom = compact ? 0.14 : 0.16
 
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.05)
@@ -187,39 +226,45 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
     uniforms.uAspect.value = size.width / Math.max(size.height, 1)
 
     if (interactive) {
-      pointer.current.x += (state.pointer.x - pointer.current.x) * Math.min(1, dt * 8)
-      pointer.current.y += (state.pointer.y - pointer.current.y) * Math.min(1, dt * 8)
-      active.current += (targetActive.current - active.current) * Math.min(1, dt * 5)
+      pointer.current.x += (state.pointer.x - pointer.current.x) * Math.min(1, dt * 7)
+      pointer.current.y += (state.pointer.y - pointer.current.y) * Math.min(1, dt * 7)
+      active.current += (targetActive.current - active.current) * Math.min(1, dt * 4)
       uniforms.uPointer.value.copy(pointer.current)
       uniforms.uPointerActive.value = active.current
     }
 
-    // coreografia de scroll: o cerebro sai da coluna, cresce, gira mais
-    // rapido e desce, emendando na secao de leitura seguinte
-    const p = smoothstep01(progressRef?.current ?? 0)
+    // Coreografia de scroll. Tudo aqui e deliberadamente contido: o cerebro
+    // apenas assenta e se dissolve, ele nao "voa" pela tela.
+    const p = ease(progressRef?.current ?? 0)
     const zoom = baseScale * (1 + p * maxZoom)
 
-    group.position.x = restX * (1 - p)
+    group.position.x = restX * (1 - p * 0.85)
     group.position.y = restY + (exitY - restY) * p
-    group.position.z = -p * 0.25
+    group.position.z = -p * 0.2
     group.scale.setScalar(zoom)
-    uniforms.uZoom.value = zoom
-    // alivia o contraste na descida para o texto de leitura respirar por cima
-    uniforms.uOpacity.value = 1 - p * 0.28
 
+    uniforms.uZoom.value = zoom
+    // ao descer, os pontos encolhem e clareiam: o texto passa por cima sem
+    // disputar leitura com as particulas
+    uniforms.uDissolve.value = 1 - p * 0.3
+    uniforms.uOpacity.value = 1 - p * 0.42
+
+    // Oscilacao, nao giro completo. Uma volta inteira passa pela vista
+    // frontal, onde o cerebro vira dois lobos lado a lado e deixa de ser
+    // reconhecivel; esta faixa fica sempre entre o 3/4 e o perfil.
     if (!reducedMotion) {
-      group.rotation.y += dt * (0.16 + p * 0.7)
-      group.rotation.x = -0.05 + Math.sin(t * 0.23) * 0.07 + p * 0.42
-      group.rotation.z = Math.sin(t * 0.17) * 0.03 - p * 0.16
-      group.position.y += Math.sin(t * 0.4) * 0.025
+      group.rotation.y = REST_YAW + Math.sin(t * 0.115) * 0.6 + p * 0.35
+      group.rotation.x = -0.04 + Math.sin(t * 0.19) * 0.06 + p * 0.3
+      group.rotation.z = Math.sin(t * 0.14) * 0.025 - p * 0.1
+      group.position.y += Math.sin(t * 0.33) * 0.02
     } else {
-      group.rotation.y = -0.5 + p * 1.4
-      group.rotation.x = -0.05 + p * 0.42
+      group.rotation.y = REST_YAW + p * 0.35
+      group.rotation.x = -0.04 + p * 0.3
     }
   })
 
   return (
-    <group ref={groupRef} rotation={[-0.05, -0.5, 0]}>
+    <group ref={groupRef} rotation={[-0.04, REST_YAW, 0]}>
       <points geometry={geometry} frustumCulled={false}>
         <shaderMaterial
           vertexShader={vertexShader}
@@ -248,8 +293,6 @@ export default function BrainScene({ progressRef }) {
   const [dpr, setDpr] = useState(1.5)
 
   useEffect(() => {
-    setMounted(true)
-
     const mqMobile = window.matchMedia('(max-width: 767px)')
     const mqMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     const mqCoarse = window.matchMedia('(pointer: coarse)')
@@ -265,9 +308,17 @@ export default function BrainScene({ progressRef }) {
     }
     sync()
 
+    // A nuvem leva ~250ms para ser gerada. Montar depois da primeira pintura
+    // tira esse custo do caminho critico: o texto do hero aparece antes.
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(() => setMounted(true), { timeout: 600 })
+      : setTimeout(() => setMounted(true), 90)
+
     mqMobile.addEventListener('change', sync)
     mqMotion.addEventListener('change', sync)
     return () => {
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idle)
+      else clearTimeout(idle)
       mqMobile.removeEventListener('change', sync)
       mqMotion.removeEventListener('change', sync)
     }
@@ -292,9 +343,8 @@ export default function BrainScene({ progressRef }) {
     }
   }, [])
 
-  // densidade: -68% em telas < 768px para nao derrubar o framerate no celular
-  const count = isMobile ? 4500 : 14000
-  const frameloop = visible ? 'always' : 'never'
+  // densidade: -65% em telas < 768px para nao derrubar o framerate no celular
+  const count = isMobile ? 9000 : 26000
 
   return (
     <div
@@ -305,7 +355,7 @@ export default function BrainScene({ progressRef }) {
       {mounted && (
         <Canvas
           dpr={dpr}
-          frameloop={frameloop}
+          frameloop={visible ? 'always' : 'never'}
           camera={{ position: [0, 0, 4.4], fov: 38, near: 0.1, far: 20 }}
           gl={{
             antialias: false,
@@ -322,13 +372,12 @@ export default function BrainScene({ progressRef }) {
           />
           <BrainParticles
             count={count}
-            pointSize={isMobile ? 0.019 : 0.0085}
+            pointSize={isMobile ? 0.019 : 0.0125}
             interactive={!isMobile}
             reducedMotion={reducedMotion}
             compact={isMobile}
             progressRef={progressRef}
           />
-          <Preload all />
         </Canvas>
       )}
     </div>
