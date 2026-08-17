@@ -1,69 +1,96 @@
-# Hero — Clínica de Musicoterapia
+# Music'art — Espaço Terapêutico
 
-Seção hero de landing page com cérebro 3D em partículas, feita em **React + Tailwind CSS + React Three Fiber**.
+Site do espaço de musicoterapia da Janaína Lima Zumach.
 
-O entregável é o componente único `src/components/Hero.jsx`. O resto do repositório
-é apenas o mínimo (Vite) para rodar e visualizar a seção.
+**Stack:** React 18 + Vite + Tailwind CSS 4 + React Three Fiber (Three.js).
 
 ```bash
 npm install
-npm run dev
+npm run dev     # desenvolvimento
+npm run build   # gera dist/
 ```
 
-## O componente
+## Deploy na Vercel
 
-`src/components/Hero.jsx` é autocontido — basta importá-lo no topo da página:
+O projeto é um Vite padrão, detectado automaticamente. Se precisar configurar
+à mão:
 
-```jsx
-import Hero from './components/Hero'
+| Campo | Valor |
+| --- | --- |
+| Framework | Vite |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Install command | `npm install` |
 
-export default function Page() {
-  return <Hero />
-}
+## Estrutura
+
+```
+src/
+  App.jsx                    palco de scroll + ordem das seções
+  index.css                  tokens de cor, tipografia e fades do scroll
+  lib/brainGeometry.js       geração procedural da nuvem de pontos
+  components/
+    BrainScene.jsx           canvas 3D, shaders e coreografia
+    Hero.jsx                 chamada principal + CTA
+    Manifesto.jsx            bloco de leitura que surge na descida
+    Sobre.jsx                Janaína: retrato, texto e trajetória
+    Espaco.jsx               pilares do espaço
+    Contato.jsx              CTA final e rodapé
+  assets/jana.webp           retrato 4:5 (880×1100)
 ```
 
-Dependências: `react`, `three`, `@react-three/fiber`, `@react-three/drei` e Tailwind.
+## O cérebro em partículas
 
-### Layout
+Gerado proceduralmente, sem modelo 3D externo. A silhueta nasce da **união**
+de seis elipsoides (frontal, pré-central, parietal, occipital, temporal e
+cerebelo): amostramos a superfície de um lobo e descartamos o que cai dentro
+de outro, o que produz as reentrâncias entre lobos em vez de uma bola lisa.
 
-- Fundo branco puro, tipografia Inter, bastante respiro.
-- Desktop: duas colunas — texto à esquerda (55%, centralizado verticalmente) e
-  cena 3D à direita (45%). Abaixo de `lg` as colunas empilham.
-- Verde-esmeralda (`--color-sonora-*`, definido em `src/index.css`) usado só nos
-  detalhes: destaque da headline, CTA, marcador do eyebrow.
+Sobre essa base vem o que faz o objeto ser lido como cérebro:
 
-### O cérebro de partículas
+- **Giros e sulcos coerentes** — faixas paralelas que serpenteiam pela
+  superfície, não ruído aleatório.
+- **Fissura de Sylvius** — esculpida por remoção de pontos. É a marca que faz
+  o perfil ser reconhecido de imediato.
+- **Fólias do cerebelo** — estrias bem mais finas que os giros do córtex.
+- **Fissura longitudinal** — parede medial achatada separando os hemisférios.
 
-Gerado **proceduralmente** — nenhum modelo 3D externo é necessário:
+O brilho é feito no fragment shader (núcleo nítido + halo suave). Bloom
+aditivo de pós-processamento lavaria o fundo claro da página, então a
+profundidade vem de fade combinado de cor, alpha e tamanho.
 
-- A silhueta nasce da **união** de elipsoides (frontal, parietal, occipital,
-  temporal, cerebelo) mais o tronco encefálico. Amostramos a superfície de um
-  lobo e descartamos o que cai dentro de outro, o que produz as reentrâncias
-  entre lobos em vez de uma bola lisa.
-- Giros/sulcos e as fólias do cerebelo vêm de senoides aplicadas na normal.
-- Os pontos ficam presos à casca, para a leitura ser de "superfície neural" e
-  não de volume sólido. A fissura longitudinal separa os dois hemisférios.
+## Coreografia de scroll
 
-### Movimento e interação
+Um palco de `240svh` com o canvas em `sticky`. Um único listener de scroll
+alimenta as duas pontas:
 
-- Rotação autônoma contínua em Y, com oscilação leve em X/Z e uma respiração
-  sutil por vértice — o cérebro nunca fica parado, mesmo sem interação.
-- No hover, as partículas próximas ao cursor sofrem uma repulsão suave e ganham
-  brilho. O cálculo é feito **no vertex shader, em espaço de tela**, então
-  milhares de pontos reagem sem custo de CPU.
-- O glow é fake por design: núcleo nítido + halo suave no fragment shader.
-  Bloom aditivo de pós-processamento lavaria o fundo branco da página.
-- Profundidade em fundo branco é resolvida com fade de cor, alpha e tamanho —
-  pontos ao fundo encolhem e se dissolvem no branco.
+- a variável CSS `--p` (0 → 1), que move os fades do HTML sem re-render;
+- o `progressRef`, lido dentro do `useFrame` da cena 3D.
 
-### Performance
+Conforme `--p` cresce, o cérebro gira mais rápido, cresce, desce e perde
+contraste — virando a linha do horizonte do bloco de leitura seguinte.
 
-- < 768px: densidade reduzida em ~62% (9.000 → 3.400 pontos), DPR limitado a
-  1.25 e interação de ponteiro desligada.
+## Performance
+
+- Telas < 768px: densidade reduzida de 14.000 para 4.500 pontos (−68%), DPR
+  limitado a 1.25, interação de ponteiro desligada e cérebro reposicionado
+  abaixo do texto.
 - `PerformanceMonitor` (drei) reduz o DPR se o framerate cair.
-- `IntersectionObserver` + `visibilitychange` congelam o render loop quando a
-  seção sai da tela ou a aba perde o foco.
-- `prefers-reduced-motion` desliga a animação e coloca o canvas em `demand`:
-  desenha um quadro e para de renderizar.
+- `IntersectionObserver` + `visibilitychange` congelam o render loop quando o
+  palco sai da tela ou a aba perde o foco.
+- `prefers-reduced-motion` desliga a animação e o scroll suave.
 - Um único draw call: `THREE.Points` com `ShaderMaterial`, sem antialias e sem
   depth buffer.
+
+## Pendências antes de ir ao ar
+
+- [ ] **Paleta oficial da marca.** A atual foi derivada da foto da Janaína —
+      verde do logo `#206050`, sálvia da parede `#7b876e`, areia da almofada
+      `#bc9d91`. Todos os tokens ficam no `@theme` de `src/index.css`.
+- [ ] **Texto da Music'art.** O material recebido corta em "é uma prática de
+      ensino que utiliza". Falta o método próprio, como são as sessões e para
+      quem. Ver comentário no topo de `Espaco.jsx`.
+- [ ] **Dados de contato reais.** WhatsApp, e-mail, endereço e redes estão como
+      placeholder — o CTA aponta para `#TROCAR-WHATSAPP` em `Contato.jsx`.
+      Nada foi inventado.
+- [ ] Favicon e imagem de compartilhamento (Open Graph).
