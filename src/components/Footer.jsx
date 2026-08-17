@@ -2,7 +2,7 @@ import { WHATSAPP_LINK, WHATSAPP_NUMERO } from '../lib/contato.js'
 
 const NAVEGACAO = [
   { href: '#musicoterapia', label: 'Musicoterapia' },
-  { href: '#janaina', label: 'A Janaína' },
+  { href: '#janaina', label: 'A Janaina' },
   { href: '#espaco', label: 'O espaço' },
   { href: '#como-funciona', label: 'Como funciona' },
 ]
@@ -32,7 +32,7 @@ export default function Footer() {
 
             <p className="mt-5 max-w-xs text-[14.5px] font-light leading-[1.7] text-ink-soft">
               Espaço terapêutico de musicoterapia clínica e educação musical,
-              conduzido por Janaína Lima Zumach.
+              conduzido por Janaina Lima Zumach.
             </p>
           </div>
 
@@ -89,7 +89,7 @@ export default function Footer() {
           <span>
             &copy; {new Date().getFullYear()} Music&rsquo;art Espaço Terapêutico
           </span>
-          <span>Janaína Lima Zumach &middot; Musicoterapeuta</span>
+          <span>Janaina Lima Zumach &middot; Musicoterapeuta</span>
         </div>
       </div>
     </footer>

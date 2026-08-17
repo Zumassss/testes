@@ -1,6 +1,6 @@
 # Music'art — Espaço Terapêutico
 
-Site do espaço de musicoterapia da Janaína Lima Zumach.
+Site do espaço de musicoterapia da Janaina Lima Zumach.
 
 **Stack:** React 18 + Vite + Tailwind CSS 4 + React Three Fiber (Three.js) + Lenis.
 **Tipografia:** Playfair Display (títulos) + Manrope (texto).
@@ -32,7 +32,7 @@ src/
   lib/
     noise.js                 ruído de valor 3D + fbm
     brainGeometry.js         SDF do cérebro e geração da nuvem de pontos
-    contato.js               WhatsApp da Janaína (único lugar)
+    contato.js               WhatsApp da Janaina (único lugar)
   lib/useParallax.js         paralaxe leve por variável CSS
   components/
     Nav.jsx                  barra fixa (inverte sobre a seção escura)
@@ -43,7 +43,7 @@ src/
     Hero.jsx                 chamada principal + CTA
     Manifesto.jsx            bloco que emerge enquanto o cérebro desce
     Beneficios.jsx           os seis efeitos, em cartões
-    Sobre.jsx                Janaína: retrato, texto e citação
+    Sobre.jsx                Janaina: retrato, texto e citação
     Trajetoria.jsx           linha do tempo
     Espaco.jsx               seção escura com os pilares
     ComoFunciona.jsx         três passos + modalidades
@@ -129,13 +129,13 @@ O scroll suave é do **Lenis**, que continua chamando `window.scrollTo` — ent�
 - [ ] **E-mail, endereço e redes sociais.** Ainda não informados, então não
       aparecem em lugar nenhum. Quando chegarem, entram em
       `src/lib/contato.js` e no rodapé.
-- [ ] **Paleta oficial da marca.** A atual foi derivada da foto da Janaína —
+- [ ] **Paleta oficial da marca.** A atual foi derivada da foto da Janaina —
       verde do logo `#206050`, sálvia da parede `#7b876e`, areia da almofada
       `#bc9d91`. Todos os tokens ficam no `@theme` de `src/index.css`.
 - [ ] **Texto da Music'art.** O material recebido corta em "é uma prática de
       ensino que utiliza". Falta o método próprio, como são as sessões, para
       quem e onde fica. Ver comentário no topo de `Espaco.jsx`.
-- [ ] **Confirmar os três passos** de `ComoFunciona.jsx` com a Janaína. Eles
+- [ ] **Confirmar os três passos** de `ComoFunciona.jsx` com a Janaina. Eles
       descrevem o percurso de quem chega sem afirmar duração, frequência ou
       preço — nada disso veio no material, e por isso não está escrito.
 - [ ] Imagem de compartilhamento (Open Graph). O favicon já está feito.

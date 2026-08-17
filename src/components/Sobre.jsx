@@ -24,7 +24,7 @@ export default function Sobre() {
               />
               <img
                 src={janaFoto}
-                alt="Janaína Lima Zumach sorrindo, segurando um chocalho, sentada atrás de um atabaque no espaço Music'art"
+                alt="Janaina Lima Zumach sorrindo, segurando um chocalho, sentada atrás de um atabaque no espaço Music'art"
                 width={880}
                 height={1100}
                 loading="lazy"
@@ -53,7 +53,7 @@ export default function Sobre() {
 
             <Reveal delay={80}>
               <h2 className="mt-6 font-display text-[clamp(2rem,4.5vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink text-balance">
-                Janaína Lima Zumach
+                Janaina Lima Zumach
               </h2>
               <p className="mt-4 text-[15px] font-light text-ink-mute">
                 Musicoterapeuta &middot; terceira geração de musicistas da
@@ -64,7 +64,7 @@ export default function Sobre() {
             <Reveal delay={150}>
               <div className="mt-8 space-y-5 text-[16.5px] font-light leading-[1.78] text-ink-soft sm:text-[17.5px]">
                 <p>
-                  Janaína começou a tocar piano aos cinco anos e deu a primeira
+                  Janaina começou a tocar piano aos cinco anos e deu a primeira
                   aula aos quinze — no mesmo ano em que fez seu primeiro
                   atendimento, com uma jovem paraplégica e neurodivergente. A
                   trajetória dela se construiu dentro da sala de aula, muito
@@ -113,7 +113,7 @@ export default function Sobre() {
             <footer className="mt-8 flex items-center justify-center gap-3">
               <span className="h-px w-8 bg-sage-300" aria-hidden="true" />
               <cite className="text-[13px] not-italic tracking-wide text-ink-mute">
-                Janaína Lima Zumach
+                Janaina Lima Zumach
               </cite>
             </footer>
           </blockquote>

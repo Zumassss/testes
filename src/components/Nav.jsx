@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 const LINKS = [
   { href: '#musicoterapia', label: 'Musicoterapia' },
-  { href: '#janaina', label: 'A Janaína' },
+  { href: '#janaina', label: 'A Janaina' },
   { href: '#espaco', label: 'O espaço' },
   { href: '#como-funciona', label: 'Como funciona' },
 ]

@@ -58,7 +58,7 @@ export default function Hero() {
             className="group inline-flex items-center gap-2 py-2 text-[15px] text-ink-soft transition-colors duration-300 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-4 focus-visible:ring-offset-page"
           >
             <span className="border-b border-sage-300 pb-0.5 transition-colors duration-300 group-hover:border-brand-600">
-              Conheça a Janaína
+              Conheça a Janaina
             </span>
           </a>
         </div>

@@ -24,7 +24,7 @@ export default function WhatsAppFloat() {
         href={WHATSAPP_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Falar com a Janaína no WhatsApp"
+        aria-label="Falar com a Janaina no WhatsApp"
         className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-[#25a86c] text-white shadow-[0_14px_34px_-10px_rgba(20,80,55,0.55)] transition-all duration-500 ease-out hover:w-[13.5rem] hover:bg-[#1f9560] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 sm:h-15 sm:w-15"
       >
         {visivel && <span className="zap-anel" aria-hidden="true" />}

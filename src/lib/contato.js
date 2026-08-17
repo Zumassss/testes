@@ -10,7 +10,7 @@ export const WHATSAPP_NUMERO = '+55 27 99761-9792'
 const WHATSAPP_E164 = '5527997619792'
 
 const MENSAGEM =
-  'Olá, Janaína! Vim pelo site da Music’art e gostaria de conversar sobre musicoterapia.'
+  'Olá, Janaina! Vim pelo site da Music’art e gostaria de conversar sobre musicoterapia.'
 
 export const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_E164}?text=${encodeURIComponent(MENSAGEM)}`
 
