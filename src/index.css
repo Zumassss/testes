@@ -1,25 +1,92 @@
 @import 'tailwindcss';
 
+/*
+ * Paleta derivada da identidade real da Music'art, amostrada da foto da
+ * Janaina: o verde do logo no jaleco, o verde-salvia da parede do espaco
+ * e o areia da almofada. Substituir pelos valores oficiais quando a
+ * paleta da marca chegar — todo o site le daqui.
+ */
 @theme {
   --font-sans:
     'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
 
-  /* Verde-esmeralda "vivo", nao neon: base para todos os detalhes. */
-  --color-sonora-50: #eefaf3;
-  --color-sonora-100: #d3f2e0;
-  --color-sonora-300: #6fdca2;
-  --color-sonora-400: #2ecc71;
-  --color-sonora-500: #00c853;
-  --color-sonora-600: #00a34a;
-  --color-sonora-700: #00813c;
+  /* verde da marca (logo: #206050) */
+  --color-brand-50: #eff7f3;
+  --color-brand-100: #d7ebe2;
+  --color-brand-200: #b0d7c6;
+  --color-brand-300: #86c3ac;
+  --color-brand-400: #4a9d81;
+  --color-brand-500: #2b7a63;
+  --color-brand-600: #206050;
+  --color-brand-700: #1a4f42;
+  --color-brand-800: #143d33;
+  --color-brand-900: #0e2a24;
+
+  /* salvia da parede do espaco (#7b876e) */
+  --color-sage-100: #e8ece4;
+  --color-sage-200: #d2d9ca;
+  --color-sage-400: #9aa78d;
+  --color-sage-500: #7b876e;
+  --color-sage-600: #626d58;
+
+  /* areia da almofada (#bc9d91) */
+  --color-sand-100: #f3e9e4;
+  --color-sand-300: #dcc4b9;
+  --color-sand-400: #bc9d91;
+
+  /* neutros com leve viés verde — nao cinza puro */
+  --color-ink: #17201c;
+  --color-ink-soft: #47524c;
+  --color-ink-mute: #7d8781;
+  --color-page: #f8faf7;
 }
 
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
-  background-color: #ffffff;
+  background-color: var(--color-page);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Progresso de scroll do palco do cerebro, escrito via JS em --p (0 -> 1).
+   Usar calc() em cima disso evita re-render do React a cada frame. */
+.stage {
+  --p: 0;
+}
+
+.hero-fade {
+  opacity: calc(1 - var(--p) * 3.2);
+  transform: translateY(calc(var(--p) * -48px));
+  will-change: opacity, transform;
+}
+
+.manifesto-fade {
+  opacity: calc((var(--p) - 0.42) * 3);
+  transform: translateY(calc((1 - var(--p)) * 40px));
+  will-change: opacity, transform;
+}
+
+.scroll-cue {
+  opacity: calc(1 - var(--p) * 6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-fade,
+  .manifesto-fade,
+  .scroll-cue {
+    opacity: 1;
+    transform: none;
+  }
 }
