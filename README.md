@@ -3,6 +3,7 @@
 Site do espaço de musicoterapia da Janaína Lima Zumach.
 
 **Stack:** React 18 + Vite + Tailwind CSS 4 + React Three Fiber (Three.js) + Lenis.
+**Tipografia:** Newsreader (títulos) + Manrope (texto).
 
 ```bash
 npm install
@@ -31,6 +32,7 @@ src/
   lib/
     noise.js                 ruído de valor 3D + fbm
     brainGeometry.js         SDF do cérebro e geração da nuvem de pontos
+    contato.js               WhatsApp da Janaína (único lugar)
   components/
     Nav.jsx                  barra fixa (inverte sobre a seção escura)
     BrainScene.jsx           canvas 3D, shaders e coreografia
@@ -112,9 +114,11 @@ O scroll suave é do **Lenis**, que continua chamando `window.scrollTo` — ent�
 
 ## Pendências antes de ir ao ar
 
-- [ ] **Dados de contato reais.** WhatsApp, e-mail, endereço e redes. O CTA
-      aponta para `#TROCAR-WHATSAPP` em `Contato.jsx`, e o rodapé tem um slot
-      comentado para os dados. Nada foi inventado.
+- [x] ~~WhatsApp~~ — `+55 27 99761-9792`, em `src/lib/contato.js`. O botão
+      abre o wa.me já com uma mensagem preenchida.
+- [ ] **E-mail, endereço e redes sociais.** Ainda não informados, então não
+      aparecem em lugar nenhum. Quando chegarem, entram em
+      `src/lib/contato.js` e no rodapé.
 - [ ] **Paleta oficial da marca.** A atual foi derivada da foto da Janaína —
       verde do logo `#206050`, sálvia da parede `#7b876e`, areia da almofada
       `#bc9d91`. Todos os tokens ficam no `@theme` de `src/index.css`.

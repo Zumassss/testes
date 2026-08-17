@@ -78,7 +78,7 @@ const vertexShader = /* glsl */ `
 
     gl_PointSize = clamp(
       uSize * uZoom * aScale * shrink * uDissolve
-        * (1.0 + infl * 0.8 + vSpark * 1.6)
+        * (1.0 + infl * 1.5 + vSpark * 1.6)
         * uScale / max(-mv.z, 0.001),
       1.4,
       26.0
@@ -123,7 +123,7 @@ const fragmentShader = /* glsl */ `
 
     float alpha = sprite * uOpacity * facing;
     alpha *= mix(1.0, 0.26, depth);
-    alpha *= 1.0 + vGlow * 0.8 + vSpark * 0.9;
+    alpha *= 1.0 + vGlow * 1.4 + vSpark * 0.9;
 
     gl_FragColor = vec4(color, clamp(alpha, 0.0, 1.0));
     #include <colorspace_fragment>
@@ -141,6 +141,7 @@ const REST_YAW = -1.6
 function BrainParticles({ count, interactive, reducedMotion, pointSize, compact, progressRef }) {
   const groupRef = useRef()
   const pointer = useRef(new THREE.Vector2(0, 0))
+  const targetPointer = useRef(new THREE.Vector2(0, 0))
   const active = useRef(0)
   const targetActive = useRef(0)
 
@@ -160,8 +161,8 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
       uAspect: { value: 1 },
       uPointer: { value: new THREE.Vector2(0, 0) },
       uPointerActive: { value: 0 },
-      uRadius: { value: 0.16 },
-      uStrength: { value: 0.01 },
+      uRadius: { value: 0.3 },
+      uStrength: { value: 0.04 },
       uMotion: { value: reducedMotion ? 0 : 1 },
       uDissolve: { value: 1 },
       uColorNear: { value: new THREE.Color(COLOR_NEAR) },
@@ -188,25 +189,41 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
 
   useEffect(() => () => geometry.dispose(), [geometry])
 
+  /*
+   * O ponteiro e lido da JANELA, nao do canvas. O texto do hero fica por
+   * cima da tela 3D, entao eventos sobre ele nunca chegariam ao canvas — e o
+   * efeito morreria justamente na metade da tela onde o cursor mais passa.
+   */
   useEffect(() => {
     if (!interactive) return
     const el = gl.domElement
-    const enter = () => (targetActive.current = 1)
-    const leave = () => (targetActive.current = 0)
-    el.addEventListener('pointerenter', enter)
-    el.addEventListener('pointerleave', leave)
+
+    const onMove = (event) => {
+      const r = el.getBoundingClientRect()
+      if (!r.width || !r.height) return
+      targetPointer.current.set(
+        ((event.clientX - r.left) / r.width) * 2 - 1,
+        -(((event.clientY - r.top) / r.height) * 2 - 1),
+      )
+      targetActive.current =
+        event.clientY >= r.top && event.clientY <= r.bottom ? 1 : 0
+    }
+    const onLeave = () => (targetActive.current = 0)
+
+    window.addEventListener('pointermove', onMove, { passive: true })
+    document.addEventListener('pointerleave', onLeave)
     return () => {
-      el.removeEventListener('pointerenter', enter)
-      el.removeEventListener('pointerleave', leave)
+      window.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerleave', onLeave)
     }
   }, [gl, interactive])
 
   // Posicao de repouso no hero. No desktop o cerebro ocupa a coluna da
   // direita; no mobile ele desce para o terco inferior — a tela e estreita
   // demais para dividir espaco com o texto — e encolhe para nao ser cortado.
-  const restX = compact ? 0 : 0.86
-  const restY = compact ? -1.14 : 0.1
-  const baseScale = compact ? 0.55 : 0.86
+  const restX = compact ? 0 : 0.94
+  const restY = compact ? -1.45 : 0.06
+  const baseScale = compact ? 0.54 : 1.02
 
   // destino no fim do scroll: desce para fora do enquadramento, deixando so
   // uma "linha do horizonte" de particulas embaixo do bloco de leitura
@@ -226,8 +243,9 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
     uniforms.uAspect.value = size.width / Math.max(size.height, 1)
 
     if (interactive) {
-      pointer.current.x += (state.pointer.x - pointer.current.x) * Math.min(1, dt * 7)
-      pointer.current.y += (state.pointer.y - pointer.current.y) * Math.min(1, dt * 7)
+      const k = Math.min(1, dt * 7)
+      pointer.current.x += (targetPointer.current.x - pointer.current.x) * k
+      pointer.current.y += (targetPointer.current.y - pointer.current.y) * k
       active.current += (targetActive.current - active.current) * Math.min(1, dt * 4)
       uniforms.uPointer.value.copy(pointer.current)
       uniforms.uPointerActive.value = active.current

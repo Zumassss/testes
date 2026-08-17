@@ -115,6 +115,9 @@ export default function App() {
         <span className="orb orb-1" />
         <span className="orb orb-2" />
         <span className="orb orb-3" />
+        <span className="orb orb-4" />
+        <span className="aurora" />
+        <span className="vinheta" />
       </div>
       <div className="grain" aria-hidden="true" />
 

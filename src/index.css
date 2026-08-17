@@ -8,9 +8,9 @@
  */
 @theme {
   --font-sans:
-    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
-  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
 
   /* verde da marca (logo: #206050) */
   --color-brand-50: #f0f7f4;
@@ -64,6 +64,14 @@ html {
    pelo proprio .ambient. */
 body {
   background-color: var(--color-page);
+  background-image: linear-gradient(
+    172deg,
+    #fbfcf9 0%,
+    var(--color-page) 34%,
+    #f2f6ee 72%,
+    #eef3e9 100%
+  );
+  background-attachment: fixed;
   color: var(--color-ink);
 }
 
@@ -108,45 +116,85 @@ html.lenis body {
 }
 
 .orb-1 {
-  top: -22vh;
-  right: -14vw;
-  width: 78vw;
-  height: 78vw;
+  top: -26vh;
+  right: -12vw;
+  width: 74vw;
+  height: 74vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(74, 157, 129, 0.26),
-    rgba(74, 157, 129, 0.07) 45%,
+    rgba(74, 157, 129, 0.42),
+    rgba(74, 157, 129, 0.13) 42%,
     transparent 70%
   );
-  animation: drift-a 34s ease-in-out infinite alternate;
+  animation: drift-a 32s ease-in-out infinite alternate;
 }
 
 .orb-2 {
-  top: 34vh;
-  left: -26vw;
-  width: 68vw;
-  height: 68vw;
+  top: 28vh;
+  left: -24vw;
+  width: 66vw;
+  height: 66vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(155, 167, 141, 0.28),
-    rgba(155, 167, 141, 0.08) 45%,
+    rgba(146, 163, 128, 0.4),
+    rgba(146, 163, 128, 0.12) 42%,
     transparent 70%
   );
-  animation: drift-b 42s ease-in-out infinite alternate;
+  animation: drift-b 39s ease-in-out infinite alternate;
 }
 
 .orb-3 {
-  bottom: -30vh;
-  left: 22vw;
-  width: 72vw;
-  height: 72vw;
+  bottom: -34vh;
+  left: 18vw;
+  width: 70vw;
+  height: 70vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(220, 196, 185, 0.32),
-    rgba(220, 196, 185, 0.09) 45%,
+    rgba(214, 183, 170, 0.44),
+    rgba(214, 183, 170, 0.13) 42%,
     transparent 70%
   );
-  animation: drift-a 48s ease-in-out infinite alternate-reverse;
+  animation: drift-a 45s ease-in-out infinite alternate-reverse;
+}
+
+.orb-4 {
+  top: 4vh;
+  left: 34vw;
+  width: 52vw;
+  height: 52vw;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(134, 195, 172, 0.34),
+    rgba(134, 195, 172, 0.1) 44%,
+    transparent 70%
+  );
+  animation: drift-c 54s ease-in-out infinite alternate;
+}
+
+/* Faixa larguissima que atravessa a tela devagar. Sozinhas, as manchas
+   ficam paradas; e esta passagem que faz o fundo parecer respirar. */
+.aurora {
+  position: absolute;
+  inset: -30% -60%;
+  background: linear-gradient(
+    104deg,
+    transparent 20%,
+    rgba(74, 157, 129, 0.14) 38%,
+    rgba(220, 196, 185, 0.16) 52%,
+    transparent 70%
+  );
+  animation: aurora 26s ease-in-out infinite alternate;
+}
+
+/* Escurece as bordas de leve: segura o olho no centro da pagina. */
+.vinheta {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 80% at 50% 42%,
+    transparent 55%,
+    rgba(35, 55, 46, 0.07) 100%
+  );
 }
 
 @keyframes drift-a {
@@ -154,16 +202,34 @@ html.lenis body {
     transform: translate3d(0, 0, 0) scale(1);
   }
   to {
-    transform: translate3d(-4vw, 5vh, 0) scale(1.12);
+    transform: translate3d(-5vw, 6vh, 0) scale(1.14);
   }
 }
 
 @keyframes drift-b {
   from {
-    transform: translate3d(0, 0, 0) scale(1.08);
+    transform: translate3d(0, 0, 0) scale(1.1);
   }
   to {
-    transform: translate3d(5vw, -4vh, 0) scale(1);
+    transform: translate3d(6vw, -5vh, 0) scale(1);
+  }
+}
+
+@keyframes drift-c {
+  from {
+    transform: translate3d(-3vw, 2vh, 0) scale(0.94);
+  }
+  to {
+    transform: translate3d(4vw, -6vh, 0) scale(1.16);
+  }
+}
+
+@keyframes aurora {
+  from {
+    transform: translate3d(-14%, 0, 0) rotate(-2deg);
+  }
+  to {
+    transform: translate3d(14%, 0, 0) rotate(2deg);
   }
 }
 
@@ -282,7 +348,29 @@ html.lenis body {
   }
 
   .orb,
+  .aurora,
   .scroll-cue-line::after {
     animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * hero em janelas baixas                                              *
+ * ------------------------------------------------------------------ */
+
+/*
+ * Num notebook de 1440x640 o hero inteiro nao cabe: com items-center o
+ * conteudo transborda para os dois lados e sobe por tras da barra fixa.
+ * Estes dois blocos sao os primeiros a sair — o titulo e o CTA ficam.
+ */
+@media (max-height: 820px) {
+  .hero-extras {
+    display: none;
+  }
+}
+
+@media (max-height: 780px) {
+  .scroll-cue {
+    display: none !important;
   }
 }
