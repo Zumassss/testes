@@ -77,11 +77,11 @@ export default function ComoFunciona() {
 
           {PASSOS.map(({ titulo, texto }, i) => (
             <Reveal as="li" key={titulo} delay={i * 100} className="relative lg:px-6 lg:text-center">
-              <span className="relative z-10 inline-flex h-[52px] w-[52px] items-center justify-center rounded-full border border-brand-200 bg-page font-display text-[15px] font-light tabular-nums text-brand-600">
+              <span className="relative z-10 inline-flex h-[52px] w-[52px] items-center justify-center rounded-full border border-brand-200 bg-page font-display text-[15px] font-medium tabular-nums text-brand-600">
                 {String(i + 1).padStart(2, '0')}
               </span>
 
-              <h3 className="mt-6 font-display text-[1.35rem] font-normal leading-snug tracking-[-0.012em] text-ink">
+              <h3 className="mt-6 font-display text-[1.35rem] font-semibold leading-snug tracking-[-0.012em] text-ink">
                 {titulo}
               </h3>
 

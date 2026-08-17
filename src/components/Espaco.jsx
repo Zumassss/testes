@@ -59,7 +59,7 @@ export default function Espaco() {
           </div>
 
           <Reveal delay={120} className="lg:col-span-6 lg:pt-24">
-            <p className="font-display text-[clamp(1.25rem,2.6vw,1.65rem)] font-light italic leading-[1.5] text-brand-100/90">
+            <p className="font-display text-[clamp(1.25rem,2.6vw,1.65rem)] font-medium italic leading-[1.5] text-brand-100/90">
               A técnica entra depois. Primeiro é preciso que a pessoa queira
               estar ali.
             </p>
@@ -70,10 +70,10 @@ export default function Espaco() {
           {PILARES.map(({ titulo, texto }, i) => (
             <Reveal as="li" key={titulo} delay={i * 80}>
               <div className="flex items-baseline gap-3 border-t border-white/15 pt-6">
-                <span className="font-display text-[13px] font-light tabular-nums text-brand-400">
+                <span className="font-display text-[13px] font-medium tabular-nums text-brand-400">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className="font-display text-[1.22rem] font-normal leading-snug tracking-[-0.01em] text-white">
+                <h3 className="font-display text-[1.22rem] font-semibold leading-snug tracking-[-0.01em] text-white">
                   {titulo}
                 </h3>
               </div>

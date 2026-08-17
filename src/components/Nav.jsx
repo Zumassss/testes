@@ -26,7 +26,7 @@ function Marca({ dark }) {
       </svg>
       <span className="flex flex-col leading-none">
         <span
-          className={`font-display text-[17px] font-normal tracking-[-0.01em] transition-colors duration-500 ${
+          className={`font-display text-[17px] font-semibold tracking-[-0.01em] transition-colors duration-500 ${
             dark ? 'text-white' : 'text-ink'
           }`}
         >
@@ -99,7 +99,7 @@ export default function Nav() {
             <li key={href}>
               <a
                 href={href}
-                className={`relative text-[14.5px] font-light transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-4 focus-visible:ring-offset-page ${
+                className={`link-sub relative text-[14.5px] font-light transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-4 focus-visible:ring-offset-page ${
                   dark
                     ? 'text-brand-100/75 hover:text-white'
                     : 'text-ink-soft hover:text-ink'
@@ -166,7 +166,7 @@ export default function Nav() {
                 href={href}
                 onClick={() => setOpen(false)}
                 tabIndex={open ? 0 : -1}
-                className="block py-4 font-display text-[19px] font-light text-ink"
+                className="block py-4 font-display text-[19px] font-medium text-ink"
               >
                 {label}
               </a>

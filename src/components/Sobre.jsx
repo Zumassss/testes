@@ -1,5 +1,6 @@
 import janaFoto from '../assets/jana.webp'
 import Reveal from './Reveal.jsx'
+import useParallax from '../lib/useParallax.js'
 
 const CREDENCIAIS = [
   ['Formação', 'Teoria musical e piano — Conservatório Brasileiro do Rio de Janeiro'],
@@ -8,13 +9,15 @@ const CREDENCIAIS = [
 ]
 
 export default function Sobre() {
+  const retrato = useParallax(46)
+
   return (
     <section id="janaina" className="relative py-24 sm:py-32 lg:py-40">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
         <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
           {/* retrato */}
           <Reveal className="lg:col-span-5">
-            <figure className="relative">
+            <figure ref={retrato} className="paralaxe relative">
               <div
                 className="absolute -left-4 -top-4 h-full w-full rounded-[2rem] border border-brand-300/50"
                 aria-hidden="true"
@@ -29,7 +32,7 @@ export default function Sobre() {
                 className="relative w-full rounded-[2rem] object-cover shadow-[0_30px_60px_-35px_rgba(13,38,32,0.5)]"
               />
               <figcaption className="absolute -bottom-6 right-4 rounded-2xl border border-sage-200/80 bg-page/90 px-5 py-4 shadow-[0_18px_40px_-28px_rgba(13,38,32,0.6)] backdrop-blur-sm sm:right-6">
-                <span className="block font-display text-[1.7rem] font-light leading-none text-brand-600 tabular-nums">
+                <span className="block font-display text-[1.7rem] font-semibold leading-none text-brand-600 tabular-nums">
                   2011
                 </span>
                 <span className="mt-1.5 block text-[11px] font-medium uppercase tracking-[0.16em] text-ink-mute">
@@ -49,7 +52,7 @@ export default function Sobre() {
             </Reveal>
 
             <Reveal delay={80}>
-              <h2 className="mt-6 font-display text-[clamp(2rem,4.5vw,3rem)] font-light leading-[1.08] tracking-[-0.03em] text-ink text-balance">
+              <h2 className="mt-6 font-display text-[clamp(2rem,4.5vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink text-balance">
                 Janaína Lima Zumach
               </h2>
               <p className="mt-4 text-[15px] font-light text-ink-mute">
@@ -102,7 +105,7 @@ export default function Sobre() {
             >
               &ldquo;
             </span>
-            <p className="relative font-display text-[clamp(1.35rem,3.2vw,2.1rem)] font-light italic leading-[1.4] tracking-[-0.015em] text-ink text-balance">
+            <p className="relative font-display text-[clamp(1.35rem,3.2vw,2.1rem)] font-medium italic leading-[1.4] tracking-[-0.015em] text-ink text-balance">
               Não são somente atendimentos técnicos. É uma troca de
               conhecimento, de desenvolvimento humano — onde a melodia que se
               escuta, o instrumento que se toca, é o amor.

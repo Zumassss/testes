@@ -63,7 +63,7 @@ export default function Trajetoria() {
                 </span>
 
                 <div>
-                  <h3 className="font-display text-[1.45rem] font-light leading-none tracking-[-0.01em] text-brand-600 tabular-nums">
+                  <h3 className="font-display text-[1.45rem] font-semibold leading-none tracking-[-0.01em] text-brand-600 tabular-nums">
                     {marco}
                   </h3>
                   <p className="mt-3 max-w-xl text-[15.5px] font-light leading-[1.72] text-ink-soft">

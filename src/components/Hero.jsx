@@ -21,7 +21,7 @@ export default function Hero() {
           </span>
         </div>
 
-        <h1 className="mt-[clamp(1.25rem,3.5svh,2rem)] font-display text-[clamp(2.15rem,min(6.6vw,8.4svh),4.5rem)] font-extralight leading-[1.03] tracking-[-0.028em] text-ink text-balance">
+        <h1 className="mt-[clamp(1.25rem,3.5svh,2rem)] font-display text-[clamp(2.05rem,min(6.2vw,8svh),4.2rem)] font-semibold leading-[1.03] tracking-[-0.028em] text-ink text-balance">
           A música alcança onde as{' '}
           <em className="not-italic text-brand-600">palavras</em> ainda não
           chegam.

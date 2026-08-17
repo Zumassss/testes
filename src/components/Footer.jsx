@@ -25,7 +25,7 @@ export default function Footer() {
               >
                 <path d="M3 10.5v3M8 6.5v11M13 9v6M18 4.5v15" />
               </svg>
-              <span className="font-display text-[19px] font-normal tracking-[-0.01em] text-ink">
+              <span className="font-display text-[19px] font-semibold tracking-[-0.01em] text-ink">
                 Music&rsquo;art
               </span>
             </span>

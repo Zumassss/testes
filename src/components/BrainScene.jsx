@@ -78,7 +78,7 @@ const vertexShader = /* glsl */ `
 
     gl_PointSize = clamp(
       uSize * uZoom * aScale * shrink * uDissolve
-        * (1.0 + infl * 1.5 + vSpark * 1.6)
+        * (1.0 + infl * 0.45 + vSpark * 1.6)
         * uScale / max(-mv.z, 0.001),
       1.4,
       26.0
@@ -119,11 +119,11 @@ const fragmentShader = /* glsl */ `
     color = mix(color, uColorFar, (1.0 - facing) * 0.7);
     // topo do giro clareia um tico: da relevo a superficie
     color = mix(color, uColorGlow, vTint * 0.1);
-    color = mix(color, uColorGlow, clamp(vGlow * 1.3 + vSpark, 0.0, 1.0));
+    color = mix(color, uColorGlow, clamp(vGlow * 0.55 + vSpark, 0.0, 1.0));
 
     float alpha = sprite * uOpacity * facing;
     alpha *= mix(1.0, 0.26, depth);
-    alpha *= 1.0 + vGlow * 1.4 + vSpark * 0.9;
+    alpha *= 1.0 + vGlow * 0.4 + vSpark * 0.9;
 
     gl_FragColor = vec4(color, clamp(alpha, 0.0, 1.0));
     #include <colorspace_fragment>
@@ -161,8 +161,8 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
       uAspect: { value: 1 },
       uPointer: { value: new THREE.Vector2(0, 0) },
       uPointerActive: { value: 0 },
-      uRadius: { value: 0.3 },
-      uStrength: { value: 0.04 },
+      uRadius: { value: 0.2 },
+      uStrength: { value: 0.012 },
       uMotion: { value: reducedMotion ? 0 : 1 },
       uDissolve: { value: 1 },
       uColorNear: { value: new THREE.Color(COLOR_NEAR) },
@@ -221,9 +221,9 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
   // Posicao de repouso no hero. No desktop o cerebro ocupa a coluna da
   // direita; no mobile ele desce para o terco inferior — a tela e estreita
   // demais para dividir espaco com o texto — e encolhe para nao ser cortado.
-  const restX = compact ? 0 : 0.94
-  const restY = compact ? -1.45 : 0.06
-  const baseScale = compact ? 0.54 : 1.02
+  const restX = compact ? 0 : 1.04
+  const restY = compact ? -1.45 : -0.3
+  const baseScale = compact ? 0.54 : 1.0
 
   // destino no fim do scroll: desce para fora do enquadramento, deixando so
   // uma "linha do horizonte" de particulas embaixo do bloco de leitura

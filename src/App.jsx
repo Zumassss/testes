@@ -12,12 +12,14 @@ import Espaco from './components/Espaco.jsx'
 import ComoFunciona from './components/ComoFunciona.jsx'
 import Contato from './components/Contato.jsx'
 import Footer from './components/Footer.jsx'
+import WhatsAppFloat from './components/WhatsAppFloat.jsx'
 
 const NAV_OFFSET = -76
 
 export default function App() {
   const stageRef = useRef(null)
   const progressRef = useRef(0)
+  const barraRef = useRef(null)
 
   /**
    * Scroll suave. O Lenis nao troca o scroll nativo por um transform: ele
@@ -77,6 +79,15 @@ export default function App() {
 
     const update = () => {
       ticking = false
+
+      // barra de progresso: mesma passada de rAF, sem listener proprio
+      const barra = barraRef.current
+      if (barra) {
+        const total = document.documentElement.scrollHeight - window.innerHeight
+        const sp = total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0
+        barra.style.setProperty('--sp', sp.toFixed(4))
+      }
+
       const travel = el.offsetHeight - window.innerHeight
       if (travel <= 0) return
 
@@ -121,6 +132,8 @@ export default function App() {
       </div>
       <div className="grain" aria-hidden="true" />
 
+      <div ref={barraRef} className="progresso" aria-hidden="true" />
+
       <Nav />
 
       <main className="relative z-10">
@@ -148,6 +161,8 @@ export default function App() {
       </main>
 
       <Footer />
+
+      <WhatsAppFloat />
     </>
   )
 }

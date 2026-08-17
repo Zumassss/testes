@@ -10,7 +10,7 @@
   --font-sans:
     'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
-  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
 
   /* verde da marca (logo: #206050) */
   --color-brand-50: #f0f7f4;
@@ -66,10 +66,10 @@ body {
   background-color: var(--color-page);
   background-image: linear-gradient(
     172deg,
-    #fbfcf9 0%,
-    var(--color-page) 34%,
-    #f2f6ee 72%,
-    #eef3e9 100%
+    #fdfefc 0%,
+    #f8fbf7 32%,
+    #f3faf5 66%,
+    #eff8f2 100%
   );
   background-attachment: fixed;
   color: var(--color-ink);
@@ -122,8 +122,8 @@ html.lenis body {
   height: 74vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(74, 157, 129, 0.42),
-    rgba(74, 157, 129, 0.13) 42%,
+    rgba(134, 205, 178, 0.4),
+    rgba(134, 205, 178, 0.12) 42%,
     transparent 70%
   );
   animation: drift-a 32s ease-in-out infinite alternate;
@@ -136,8 +136,8 @@ html.lenis body {
   height: 66vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(146, 163, 128, 0.4),
-    rgba(146, 163, 128, 0.12) 42%,
+    rgba(190, 214, 186, 0.42),
+    rgba(190, 214, 186, 0.12) 42%,
     transparent 70%
   );
   animation: drift-b 39s ease-in-out infinite alternate;
@@ -150,8 +150,8 @@ html.lenis body {
   height: 70vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(214, 183, 170, 0.44),
-    rgba(214, 183, 170, 0.13) 42%,
+    rgba(238, 216, 205, 0.5),
+    rgba(238, 216, 205, 0.14) 42%,
     transparent 70%
   );
   animation: drift-a 45s ease-in-out infinite alternate-reverse;
@@ -164,8 +164,8 @@ html.lenis body {
   height: 52vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(134, 195, 172, 0.34),
-    rgba(134, 195, 172, 0.1) 44%,
+    rgba(168, 224, 200, 0.4),
+    rgba(168, 224, 200, 0.11) 44%,
     transparent 70%
   );
   animation: drift-c 54s ease-in-out infinite alternate;
@@ -179,8 +179,8 @@ html.lenis body {
   background: linear-gradient(
     104deg,
     transparent 20%,
-    rgba(74, 157, 129, 0.14) 38%,
-    rgba(220, 196, 185, 0.16) 52%,
+    rgba(140, 212, 184, 0.16) 38%,
+    rgba(240, 220, 210, 0.18) 52%,
     transparent 70%
   );
   animation: aurora 26s ease-in-out infinite alternate;
@@ -193,7 +193,7 @@ html.lenis body {
   background: radial-gradient(
     120% 80% at 50% 42%,
     transparent 55%,
-    rgba(35, 55, 46, 0.07) 100%
+    rgba(60, 95, 80, 0.045) 100%
   );
 }
 
@@ -372,5 +372,215 @@ html.lenis body {
 @media (max-height: 780px) {
   .scroll-cue {
     display: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * barra de progresso do scroll                                        *
+ * ------------------------------------------------------------------ */
+
+.progresso {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  height: 2px;
+  transform: scaleX(var(--sp, 0));
+  transform-origin: left;
+  background: linear-gradient(
+    90deg,
+    var(--color-brand-400),
+    var(--color-brand-600) 60%,
+    var(--color-sand-400)
+  );
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ------------------------------------------------------------------ *
+ * titulo que sobe palavra a palavra                                   *
+ * ------------------------------------------------------------------ */
+
+/*
+ * Cada palavra vive numa janela com overflow hidden e sobe de dentro dela.
+ * O padding/margin negativo existe porque, sem ele, o overflow cortaria as
+ * descidas de "g", "p" e do cedilha.
+ */
+.split-w {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.split-i {
+  display: inline-block;
+  transform: translateY(115%);
+  opacity: 0;
+  transition:
+    transform 0.9s var(--ease-out-soft),
+    opacity 0.9s var(--ease-out-soft);
+}
+
+.split.is-in .split-i {
+  transform: none;
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ *
+ * cartoes com luz que segue o cursor                                  *
+ * ------------------------------------------------------------------ */
+
+.spot {
+  position: relative;
+  isolation: isolate;
+}
+
+.spot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    16rem 16rem at var(--mx, 50%) var(--my, 0%),
+    rgba(74, 157, 129, 0.17),
+    transparent 68%
+  );
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.spot:hover::before {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ *
+ * equalizador: o ornamento sonoro entre secoes                        *
+ * ------------------------------------------------------------------ */
+
+.eq {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 26px;
+}
+
+.eq span {
+  display: block;
+  width: 2px;
+  border-radius: 9999px;
+  background: currentColor;
+  transform-origin: center;
+  animation: eq 1.9s ease-in-out infinite;
+}
+
+@keyframes eq {
+  0%,
+  100% {
+    height: 5px;
+    opacity: 0.35;
+  }
+  50% {
+    height: 22px;
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * botao flutuante de WhatsApp                                         *
+ * ------------------------------------------------------------------ */
+
+.zap {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 45;
+  transform: translateY(1.5rem) scale(0.85);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.6s var(--ease-out-soft),
+    opacity 0.6s var(--ease-out-soft);
+}
+
+.zap[data-visivel='true'] {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* anel que pulsa por tras do botao — chama sem piscar */
+.zap-anel {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: rgba(37, 168, 108, 0.45);
+  animation: anel 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+
+@keyframes anel {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70%,
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * sublinhado dos links da barra                                       *
+ * ------------------------------------------------------------------ */
+
+.link-sub::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s var(--ease-out-soft);
+}
+
+.link-sub:hover::after,
+.link-sub:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ------------------------------------------------------------------ *
+ * paralaxe                                                            *
+ * ------------------------------------------------------------------ */
+
+.paralaxe {
+  transform: translate3d(0, var(--py, 0px), 0);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-i {
+    transform: none;
+    opacity: 1;
+    transition: none;
+  }
+
+  .eq span,
+  .zap-anel {
+    animation: none;
+  }
+
+  .paralaxe {
+    transform: none;
+  }
+
+  .zap {
+    transition: none;
   }
 }

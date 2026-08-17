@@ -1,4 +1,5 @@
 import Reveal from './Reveal.jsx'
+import SplitReveal from './SplitReveal.jsx'
 
 /**
  * Cabecalho padrao das secoes: etiqueta, titulo e (opcional) linha de apoio.
@@ -33,15 +34,13 @@ export default function SectionHead({
         </span>
       </Reveal>
 
-      <Reveal delay={80}>
-        <h2
-          className={`mt-6 font-display text-[2rem] font-light leading-[1.1] tracking-[-0.028em] text-balance sm:text-[2.6rem] lg:text-[3rem] ${
-            dark ? 'text-white' : 'text-ink'
-          }`}
-        >
-          {title}
-        </h2>
-      </Reveal>
+      <SplitReveal
+        text={title}
+        delay={90}
+        className={`mt-6 font-display text-[2rem] font-semibold leading-[1.1] tracking-[-0.028em] text-balance sm:text-[2.6rem] lg:text-[3rem] ${
+          dark ? 'text-white' : 'text-ink'
+        }`}
+      />
 
       {lead && (
         <Reveal delay={150}>

@@ -25,7 +25,7 @@ export default function Contato() {
               Primeiro passo
             </span>
 
-            <h2 className="mx-auto mt-6 max-w-2xl font-display text-[clamp(2rem,4.6vw,3rem)] font-light leading-[1.08] tracking-[-0.03em] text-ink text-balance">
+            <h2 className="mx-auto mt-6 max-w-2xl font-display text-[clamp(2rem,4.6vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink text-balance">
               Vamos conversar sobre o que você precisa.
             </h2>
 

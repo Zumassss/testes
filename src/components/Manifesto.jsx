@@ -10,7 +10,7 @@ export default function Manifesto() {
         O ponto de partida
       </span>
 
-      <p className="mt-7 font-display text-[clamp(1.6rem,4.2vw,2.75rem)] font-light leading-[1.22] tracking-[-0.02em] text-ink text-balance">
+      <p className="mt-7 font-display text-[clamp(1.6rem,4.2vw,2.75rem)] font-semibold leading-[1.22] tracking-[-0.02em] text-ink text-balance">
         O som chega antes da palavra. Toda sessão começa por{' '}
         <em className="not-italic text-brand-600">escutar</em>.
       </p>

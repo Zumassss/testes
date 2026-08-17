@@ -1,5 +1,13 @@
 import Reveal from './Reveal.jsx'
 import SectionHead from './SectionHead.jsx'
+import Equalizador from './Equalizador.jsx'
+
+/* posicao do cursor -> variaveis CSS que movem o brilho do cartao */
+const seguirCursor = (event) => {
+  const r = event.currentTarget.getBoundingClientRect()
+  event.currentTarget.style.setProperty('--mx', `${event.clientX - r.left}px`)
+  event.currentTarget.style.setProperty('--my', `${event.clientY - r.top}px`)
+}
 
 /*
  * Os seis efeitos vem do material que a Janaina enviou sobre o trabalho da
@@ -91,11 +99,16 @@ export default function Beneficios() {
           lead="Cada encontro é montado a partir do que a pessoa traz naquele dia — o instrumento, a canção e o andamento mudam, o cuidado não."
         />
 
+        <Equalizador className="mt-12 !justify-start" />
+
         <ul className="mt-16 grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:mt-20 lg:grid-cols-3">
           {EFEITOS.map(({ titulo, texto, icone }, i) => (
-            <Reveal as="li" key={titulo} delay={i * 70}>
-              <div className="group h-full rounded-2xl border border-sage-200/70 bg-white/55 p-7 backdrop-blur-sm transition-all duration-500 ease-out hover:-translate-y-1 hover:border-brand-300/70 hover:bg-white/80 hover:shadow-[0_18px_40px_-24px_rgba(20,61,51,0.35)] sm:p-8">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-colors duration-500 group-hover:bg-brand-600 group-hover:text-white">
+            <Reveal as="li" key={titulo} delay={i * 70} className="h-full">
+              <div
+                onPointerMove={seguirCursor}
+                className="spot group h-full rounded-2xl border border-sage-200/70 bg-white/55 p-7 backdrop-blur-sm transition-all duration-500 ease-out hover:-translate-y-1.5 hover:border-brand-300/70 hover:bg-white/80 hover:shadow-[0_22px_48px_-24px_rgba(20,61,51,0.32)] sm:p-8"
+              >
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-all duration-500 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white">
                   <svg
                     viewBox="0 0 24 24"
                     className="h-[22px] w-[22px]"
@@ -110,7 +123,7 @@ export default function Beneficios() {
                   </svg>
                 </span>
 
-                <h3 className="mt-6 font-display text-[1.28rem] font-normal leading-snug tracking-[-0.01em] text-ink">
+                <h3 className="mt-6 font-display text-[1.28rem] font-semibold leading-snug tracking-[-0.01em] text-ink">
                   {titulo}
                 </h3>
 
