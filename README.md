@@ -3,7 +3,7 @@
 Site do espaço de musicoterapia da Janaína Lima Zumach.
 
 **Stack:** React 18 + Vite + Tailwind CSS 4 + React Three Fiber (Three.js) + Lenis.
-**Tipografia:** Newsreader (títulos) + Manrope (texto).
+**Tipografia:** Playfair Display (títulos) + Manrope (texto).
 
 ```bash
 npm install
@@ -33,8 +33,12 @@ src/
     noise.js                 ruído de valor 3D + fbm
     brainGeometry.js         SDF do cérebro e geração da nuvem de pontos
     contato.js               WhatsApp da Janaína (único lugar)
+  lib/useParallax.js         paralaxe leve por variável CSS
   components/
     Nav.jsx                  barra fixa (inverte sobre a seção escura)
+    WhatsAppFloat.jsx        atalho fixo no canto inferior direito
+    SplitReveal.jsx          título que sobe palavra a palavra
+    Equalizador.jsx          ornamento sonoro animado
     BrainScene.jsx           canvas 3D, shaders e coreografia
     Hero.jsx                 chamada principal + CTA
     Manifesto.jsx            bloco que emerge enquanto o cérebro desce
@@ -101,8 +105,14 @@ O scroll suave é do **Lenis**, que continua chamando `window.scrollTo` — ent�
 
 ## Performance
 
-- Telas < 768px: 9.000 pontos em vez de 26.000, DPR limitado a 1.25,
-  interação de ponteiro desligada e cérebro reposicionado abaixo do texto.
+- Abaixo de `lg` (1024px) o cérebro desce para baixo do texto e a interação
+  de ponteiro é desligada — é o mesmo breakpoint em que a coluna de texto do
+  hero passa a ocupar a largura toda. Densidade: 26.000 pontos no desktop,
+  16.000 no tablet, 9.000 abaixo de 768px, com DPR limitado a 1.25.
+- O X de repouso do cérebro é calculado da largura real da janela, não fixo
+  em unidades de mundo: uma unidade vale mais pixels quanto mais alta é a
+  tela, então um valor fixo encostava na borda direita em telas altas e
+  sobrava espaço nas baixas.
 - A nuvem leva ~250 ms para ser gerada, então a cena monta em
   `requestIdleCallback` — o texto do hero aparece antes.
 - `PerformanceMonitor` (drei) reduz o DPR se o framerate cair.

@@ -138,6 +138,9 @@ const ease = (t) => t * t * t * (t * (t * 6 - 15) + 10)
    Sylvius e o cerebelo aparecem, ou seja, onde o objeto se le como cerebro. */
 const REST_YAW = -1.6
 
+/* folga entre o cerebro e a borda direita, em fracao da largura da janela */
+const GUTTER = 0.055
+
 function BrainParticles({ count, interactive, reducedMotion, pointSize, compact, progressRef }) {
   const groupRef = useRef()
   const pointer = useRef(new THREE.Vector2(0, 0))
@@ -147,7 +150,7 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
 
   const { gl, size, camera } = useThree()
 
-  const { positions, normals, scales, seeds, tints, drawCount } = useMemo(
+  const { positions, normals, scales, seeds, tints, drawCount, radiusXZ } = useMemo(
     () => buildBrainCloud(count),
     [count],
   )
@@ -219,9 +222,8 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
   }, [gl, interactive])
 
   // Posicao de repouso no hero. No desktop o cerebro ocupa a coluna da
-  // direita; no mobile ele desce para o terco inferior — a tela e estreita
+  // direita; abaixo de lg ele desce para o terco inferior — a tela e estreita
   // demais para dividir espaco com o texto — e encolhe para nao ser cortado.
-  const restX = compact ? 0 : 1.04
   const restY = compact ? -1.45 : -0.3
   const baseScale = compact ? 0.54 : 1.0
 
@@ -255,6 +257,24 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
     // apenas assenta e se dissolve, ele nao "voa" pela tela.
     const p = ease(progressRef?.current ?? 0)
     const zoom = baseScale * (1 + p * maxZoom)
+
+    /*
+     * X de repouso calculado da largura REAL da janela, nao fixo em unidades
+     * de mundo. Uma unidade de mundo vale mais pixels quanto mais alta e a
+     * tela, entao um valor fixo encostava na borda direita em telas altas e
+     * sobrava espaco nas baixas. Aqui o cerebro fica sempre encostado a
+     * direita, com a mesma folga proporcional.
+     */
+    let restX = 0
+    if (!compact) {
+      const halfWorldH = Math.tan(fov / 2) * Math.abs(camera.position.z)
+      const pxPorUnidade = size.height / 2 / halfWorldH
+      const meiaLargura = radiusXZ * zoom
+      restX = Math.max(
+        0.4,
+        (size.width * (0.5 - GUTTER)) / pxPorUnidade - meiaLargura,
+      )
+    }
 
     group.position.x = restX * (1 - p * 0.85)
     group.position.y = restY + (exitY - restY) * p
@@ -306,17 +326,22 @@ export default function BrainScene({ progressRef }) {
   const containerRef = useRef(null)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [stacked, setStacked] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
   const [visible, setVisible] = useState(true)
   const [dpr, setDpr] = useState(1.5)
 
   useEffect(() => {
     const mqMobile = window.matchMedia('(max-width: 767px)')
+    // Abaixo de lg o texto do hero ja ocupa a largura toda, entao o cerebro
+    // precisa sair de perto dele — mesmo breakpoint que o layout usa.
+    const mqStacked = window.matchMedia('(max-width: 1023px)')
     const mqMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     const mqCoarse = window.matchMedia('(pointer: coarse)')
 
     const sync = () => {
       setIsMobile(mqMobile.matches)
+      setStacked(mqStacked.matches)
       setReducedMotion(mqMotion.matches)
       setDpr(
         mqMobile.matches || mqCoarse.matches
@@ -333,11 +358,13 @@ export default function BrainScene({ progressRef }) {
       : setTimeout(() => setMounted(true), 90)
 
     mqMobile.addEventListener('change', sync)
+    mqStacked.addEventListener('change', sync)
     mqMotion.addEventListener('change', sync)
     return () => {
       if (window.cancelIdleCallback) window.cancelIdleCallback(idle)
       else clearTimeout(idle)
       mqMobile.removeEventListener('change', sync)
+      mqStacked.removeEventListener('change', sync)
       mqMotion.removeEventListener('change', sync)
     }
   }, [])
@@ -362,7 +389,7 @@ export default function BrainScene({ progressRef }) {
   }, [])
 
   // densidade: -65% em telas < 768px para nao derrubar o framerate no celular
-  const count = isMobile ? 9000 : 26000
+  const count = isMobile ? 9000 : stacked ? 16000 : 26000
 
   return (
     <div
@@ -390,10 +417,10 @@ export default function BrainScene({ progressRef }) {
           />
           <BrainParticles
             count={count}
-            pointSize={isMobile ? 0.019 : 0.0125}
-            interactive={!isMobile}
+            pointSize={stacked ? 0.019 : 0.0125}
+            interactive={!stacked}
             reducedMotion={reducedMotion}
-            compact={isMobile}
+            compact={stacked}
             progressRef={progressRef}
           />
         </Canvas>

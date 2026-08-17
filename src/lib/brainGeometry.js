@@ -181,7 +181,12 @@ const SCALE = 1.42
 /**
  * @param {number} count numero alvo de pontos
  * @returns {{positions: Float32Array, normals: Float32Array, scales: Float32Array,
- *            seeds: Float32Array, tints: Float32Array, drawCount: number}}
+ *            seeds: Float32Array, tints: Float32Array, drawCount: number,
+ *            radiusXZ: number}}
+ *
+ * `radiusXZ` e o raio no plano horizontal. Como o cerebro so gira em torno
+ * de Y, e ele — nao a largura lateral — que define quanto espaco o objeto
+ * ocupa na tela em qualquer instante da animacao.
  */
 export function buildBrainCloud(count) {
   const positions = new Float32Array(count * 3)
@@ -197,6 +202,7 @@ export function buildBrainCloud(count) {
 
   let i = 0
   let guard = 0
+  let radiusXZ = 0
   const maxTries = count * 260
 
   while (i < count && guard < maxTries) {
@@ -262,9 +268,14 @@ export function buildBrainCloud(count) {
     }
 
     const idx = i * 3
-    positions[idx] = sx * SCALE
+    const px = sx * SCALE
+    const pz = z * SCALE
+    positions[idx] = px
     positions[idx + 1] = (y + 0.11) * SCALE
-    positions[idx + 2] = z * SCALE
+    positions[idx + 2] = pz
+
+    const r = Math.sqrt(px * px + pz * pz)
+    if (r > radiusXZ) radiusXZ = r
 
     normals[idx] = snx
     normals[idx + 1] = n[1]
@@ -278,5 +289,5 @@ export function buildBrainCloud(count) {
     i++
   }
 
-  return { positions, normals, scales, seeds, tints, drawCount: i }
+  return { positions, normals, scales, seeds, tints, drawCount: i, radiusXZ }
 }
