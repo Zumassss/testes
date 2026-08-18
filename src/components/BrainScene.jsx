@@ -139,7 +139,7 @@ const ease = (t) => t * t * t * (t * (t * 6 - 15) + 10)
 const REST_YAW = -1.6
 
 /* folga entre o cerebro e a borda direita, em fracao da largura da janela */
-const GUTTER = 0.055
+const GUTTER = 0.105
 
 function BrainParticles({ count, interactive, reducedMotion, pointSize, progressRef }) {
   const groupRef = useRef()

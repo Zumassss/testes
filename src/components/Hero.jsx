@@ -25,10 +25,12 @@ export default function Hero({ mobile = false }) {
         chegam.
       </h1>
 
-      <p className="mt-4 max-w-lg text-[15px] font-normal leading-[1.65] text-ink-soft sm:mt-6 sm:text-[16.5px] sm:leading-[1.72] lg:text-[17.5px]">
-        Um espaço acolhedor onde som, escuta e vínculo trabalham juntos — para
-        desenvolver fala, comunicação, socialização e equilíbrio emocional, no
-        tempo de cada pessoa.
+      {/* Uma linha so. A explicacao do metodo vive nas secoes seguintes;
+          aqui o trabalho e convidar, e texto longo no hero afasta. */}
+      <p className="mt-4 max-w-lg text-[16px] font-medium leading-[1.55] text-ink-soft sm:mt-6 sm:text-[18px] lg:text-[19px]">
+        Musicoterapia clínica para crianças e adolescentes.
+        <br className="hidden sm:block" />{' '}
+        <span className="text-ink">A primeira conversa é só para escutar.</span>
       </p>
 
       <div className="mt-7 flex flex-col items-stretch gap-3 sm:mt-9 sm:flex-row sm:items-center sm:gap-5 lg:mt-10">
