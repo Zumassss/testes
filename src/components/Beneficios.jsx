@@ -1,6 +1,7 @@
 import Reveal from './Reveal.jsx'
 import SectionHead from './SectionHead.jsx'
 import Equalizador from './Equalizador.jsx'
+import Mascote from './Mascote.jsx'
 
 /* posicao do cursor -> variaveis CSS que movem o brilho do cartao */
 const seguirCursor = (event) => {
@@ -88,30 +89,30 @@ const EFEITOS = [
 
 export default function Beneficios() {
   return (
-    <section
-      id="musicoterapia"
-      className="relative py-24 sm:py-32 lg:py-40"
-    >
+    <section id="musicoterapia" className="relative py-16 sm:py-24 lg:py-36">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-        <SectionHead
-          label="O que a música desenvolve"
-          title="Um estímulo só, muitos caminhos abertos ao mesmo tempo."
-          lead="Cada encontro é montado a partir do que a pessoa traz naquele dia — o instrumento, a canção e o andamento mudam, o cuidado não."
-        />
+        <div className="flex items-end justify-between gap-6">
+          <SectionHead
+            label="O que a música desenvolve"
+            title="Um estímulo só, muitos caminhos abertos ao mesmo tempo."
+            lead="Cada encontro é montado a partir do que a pessoa traz naquele dia — o instrumento, a canção e o andamento mudam, o cuidado não."
+          />
+          <Mascote largura={150} className="hidden shrink-0 lg:block" alt="" />
+        </div>
 
-        <Equalizador className="mt-12 !justify-start" />
+        <Equalizador className="mt-8 !justify-start sm:mt-10" />
 
-        <ul className="mt-16 grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:mt-20 lg:grid-cols-3">
+        <ul className="mt-8 grid gap-3.5 sm:mt-12 sm:grid-cols-2 sm:gap-5 lg:mt-16 lg:grid-cols-3 lg:gap-6">
           {EFEITOS.map(({ titulo, texto, icone }, i) => (
             <Reveal as="li" key={titulo} delay={i * 70} className="h-full">
               <div
                 onPointerMove={seguirCursor}
-                className="spot group h-full rounded-2xl border border-sage-200/70 bg-white/55 p-7 backdrop-blur-sm transition-all duration-500 ease-out hover:-translate-y-1.5 hover:border-brand-300/70 hover:bg-white/80 hover:shadow-[0_22px_48px_-24px_rgba(20,61,51,0.32)] sm:p-8"
+                className="spot group flex h-full items-start gap-4 rounded-2xl border border-cream-300/70 bg-cream-100/70 p-4 transition-all duration-500 ease-out hover:-translate-y-1 hover:border-brand-400/70 hover:bg-cream-100 hover:shadow-[0_20px_44px_-26px_rgba(58,39,18,0.35)] sm:block sm:p-6 lg:p-7"
               >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-all duration-500 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-200/70 text-brand-800 transition-all duration-500 group-hover:scale-110 group-hover:bg-brand-700 group-hover:text-cream-50 sm:h-11 sm:w-11">
                   <svg
                     viewBox="0 0 24 24"
-                    className="h-[22px] w-[22px]"
+                    className="h-[18px] w-[18px] sm:h-[22px] sm:w-[22px]"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.4"
@@ -123,13 +124,15 @@ export default function Beneficios() {
                   </svg>
                 </span>
 
-                <h3 className="mt-6 font-display text-[1.28rem] font-semibold leading-snug tracking-[-0.01em] text-ink">
-                  {titulo}
-                </h3>
+                <div className="min-w-0">
+                  <h3 className="font-display text-[16.5px] font-semibold leading-snug tracking-[-0.01em] text-ink sm:mt-5 sm:text-[1.2rem] lg:text-[1.26rem]">
+                    {titulo}
+                  </h3>
 
-                <p className="mt-3 text-[15px] font-light leading-[1.7] text-ink-soft">
-                  {texto}
-                </p>
+                  <p className="mt-1.5 text-[13.5px] leading-[1.6] text-ink-soft sm:mt-3 sm:text-[14.5px] sm:leading-[1.7] lg:text-[15px]">
+                    {texto}
+                  </p>
+                </div>
               </div>
             </Reveal>
           ))}

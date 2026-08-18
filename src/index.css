@@ -1,10 +1,16 @@
 @import 'tailwindcss';
 
 /*
- * Paleta derivada da identidade real da Music'art, amostrada da foto da
- * Janaina: o verde do logo no jaleco, o verde-salvia da parede do espaco
- * e o areia da almofada. Substituir pelos valores oficiais quando a
- * paleta da marca chegar — todo o site le daqui.
+ * Paleta OFICIAL da Music'art, conforme a marca:
+ *   Eucalípto        #86A485  — verde principal (é o mesmo verde da linha
+ *                               do batimento na logo: amostrado #84A082)
+ *   Passeio Ecológico #B7CDB5 — verde claro
+ *   Algodão Egípcio  #EEE3D5  — bege
+ *   Branco Gelo      #FCF4E7  — fundo da página
+ *   Marrom           #56361A  — cor do letreiro "Music'art", usada como tinta
+ *
+ * Os tons intermediários abaixo foram derivados desses cinco. Os de texto
+ * respeitam contraste AA sobre o Branco Gelo.
  */
 @theme {
   --font-sans:
@@ -12,39 +18,33 @@
     'Helvetica Neue', Arial, sans-serif;
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
 
-  /* verde da marca (logo: #206050) */
-  --color-brand-50: #f0f7f4;
-  --color-brand-100: #d9ece3;
-  --color-brand-200: #b3d8c8;
-  --color-brand-300: #86c3ac;
-  --color-brand-400: #4a9d81;
-  --color-brand-500: #2b7a63;
-  --color-brand-600: #206050;
-  --color-brand-700: #1a4f42;
-  --color-brand-800: #143d33;
-  --color-brand-900: #0d2620;
-  --color-brand-950: #071a15;
+  /* verde */
+  --color-brand-50: #f4f8f3;
+  --color-brand-100: #e7efe6;
+  --color-brand-200: #cfdece;
+  --color-brand-300: #b7cdb5; /* Passeio Ecológico */
+  --color-brand-400: #9db89b;
+  --color-brand-500: #86a485; /* Eucalípto */
+  --color-brand-600: #6d8c6c;
+  --color-brand-700: #587158;
+  --color-brand-800: #445845;
+  --color-brand-900: #2e3b2f;
+  --color-brand-950: #1d271e;
 
-  /* salvia da parede do espaco (#7b876e) */
-  --color-sage-100: #eaeee4;
-  --color-sage-200: #d6ddcb;
-  --color-sage-300: #b9c4aa;
-  --color-sage-400: #9aa78d;
-  --color-sage-500: #7b876e;
-  --color-sage-600: #626d58;
+  /* bege / creme */
+  --color-cream-50: #fcf4e7; /* Branco Gelo */
+  --color-cream-100: #f7ece0;
+  --color-cream-200: #eee3d5; /* Algodão Egípcio */
+  --color-cream-300: #e2d3c0;
+  --color-cream-400: #cbb79c;
 
-  /* areia da almofada (#bc9d91) */
-  --color-sand-100: #f6ece7;
-  --color-sand-200: #ecdad2;
-  --color-sand-300: #dcc4b9;
-  --color-sand-400: #bc9d91;
+  /* tinta: o marrom da marca */
+  --color-ink: #3a2712;
+  --color-ink-soft: #6a5137;
+  --color-ink-mute: #7a6449;
+  --color-brown: #56361a;
 
-  /* neutros com leve vies verde — nao cinza puro */
-  --color-ink: #141c18;
-  --color-ink-soft: #46524b;
-  --color-ink-mute: #7c8781;
-  --color-page: #f7f9f5;
-  --color-shell: #eff3ea;
+  --color-page: #fcf4e7;
 
   --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -59,28 +59,22 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Sem overflow-x aqui de proposito: overflow no body quebra position:sticky,
-   e o palco do cerebro depende dele. As manchas do fundo ja sao contidas
-   pelo proprio .ambient. */
+/*
+ * Sem background-attachment: fixed. No celular ele forca o navegador a
+ * repintar o fundo inteiro a cada quadro de scroll — era uma das causas do
+ * travamento. O gradiente aqui e do proprio elemento, que rola junto.
+ */
 body {
   background-color: var(--color-page);
-  background-image: linear-gradient(
-    172deg,
-    #fdfefc 0%,
-    #f8fbf7 32%,
-    #f3faf5 66%,
-    #eff8f2 100%
-  );
-  background-attachment: fixed;
   color: var(--color-ink);
 }
 
 ::selection {
-  background: var(--color-brand-200);
-  color: var(--color-brand-900);
+  background: var(--color-brand-300);
+  color: var(--color-ink);
 }
 
-/* Lenis assume o controle do scroll; o smooth nativo brigaria com ele. */
+/* Lenis assume o scroll no desktop; o smooth nativo brigaria com ele. */
 html.lenis,
 html.lenis body {
   height: auto;
@@ -97,9 +91,10 @@ html.lenis body {
  * ------------------------------------------------------------------ */
 
 /*
- * Manchas de cor bem difusas atras de tudo. Sao gradientes radiais com
- * borda transparente — nao levam filter: blur(), que custaria caro num
- * elemento desse tamanho e travaria o celular.
+ * Manchas de cor difusas atras de tudo. Sao gradientes radiais com borda
+ * transparente — sem filter: blur(), que num elemento desse tamanho custa
+ * caro. No celular a animacao e desligada e sobram duas manchas paradas:
+ * quatro camadas compostas em movimento derrubavam o framerate do scroll.
  */
 .ambient {
   position: fixed;
@@ -107,94 +102,67 @@ html.lenis body {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  contain: strict;
 }
 
 .orb {
   position: absolute;
   border-radius: 9999px;
-  will-change: transform;
 }
 
 .orb-1 {
-  top: -26vh;
-  right: -12vw;
-  width: 74vw;
-  height: 74vw;
+  top: -24vh;
+  right: -14vw;
+  width: 76vw;
+  height: 76vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(134, 205, 178, 0.4),
-    rgba(134, 205, 178, 0.12) 42%,
+    rgba(183, 205, 181, 0.55),
+    rgba(183, 205, 181, 0.16) 44%,
     transparent 70%
   );
-  animation: drift-a 32s ease-in-out infinite alternate;
 }
 
 .orb-2 {
-  top: 28vh;
+  top: 30vh;
   left: -24vw;
   width: 66vw;
   height: 66vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(190, 214, 186, 0.42),
-    rgba(190, 214, 186, 0.12) 42%,
+    rgba(238, 227, 213, 0.85),
+    rgba(238, 227, 213, 0.28) 44%,
     transparent 70%
   );
-  animation: drift-b 39s ease-in-out infinite alternate;
 }
 
 .orb-3 {
-  bottom: -34vh;
-  left: 18vw;
+  bottom: -32vh;
+  left: 20vw;
   width: 70vw;
   height: 70vw;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(238, 216, 205, 0.5),
-    rgba(238, 216, 205, 0.14) 42%,
+    rgba(134, 164, 133, 0.3),
+    rgba(134, 164, 133, 0.09) 44%,
     transparent 70%
   );
-  animation: drift-a 45s ease-in-out infinite alternate-reverse;
 }
 
-.orb-4 {
-  top: 4vh;
-  left: 34vw;
-  width: 52vw;
-  height: 52vw;
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(168, 224, 200, 0.4),
-    rgba(168, 224, 200, 0.11) 44%,
-    transparent 70%
-  );
-  animation: drift-c 54s ease-in-out infinite alternate;
-}
-
-/* Faixa larguissima que atravessa a tela devagar. Sozinhas, as manchas
-   ficam paradas; e esta passagem que faz o fundo parecer respirar. */
-.aurora {
-  position: absolute;
-  inset: -30% -60%;
-  background: linear-gradient(
-    104deg,
-    transparent 20%,
-    rgba(140, 212, 184, 0.16) 38%,
-    rgba(240, 220, 210, 0.18) 52%,
-    transparent 70%
-  );
-  animation: aurora 26s ease-in-out infinite alternate;
-}
-
-/* Escurece as bordas de leve: segura o olho no centro da pagina. */
-.vinheta {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    120% 80% at 50% 42%,
-    transparent 55%,
-    rgba(60, 95, 80, 0.045) 100%
-  );
+/* animar so onde sobra folga de GPU */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .orb {
+    will-change: transform;
+  }
+  .orb-1 {
+    animation: drift-a 38s ease-in-out infinite alternate;
+  }
+  .orb-2 {
+    animation: drift-b 46s ease-in-out infinite alternate;
+  }
+  .orb-3 {
+    animation: drift-a 52s ease-in-out infinite alternate-reverse;
+  }
 }
 
 @keyframes drift-a {
@@ -202,47 +170,40 @@ html.lenis body {
     transform: translate3d(0, 0, 0) scale(1);
   }
   to {
-    transform: translate3d(-5vw, 6vh, 0) scale(1.14);
+    transform: translate3d(-4vw, 5vh, 0) scale(1.12);
   }
 }
 
 @keyframes drift-b {
   from {
-    transform: translate3d(0, 0, 0) scale(1.1);
+    transform: translate3d(0, 0, 0) scale(1.09);
   }
   to {
-    transform: translate3d(6vw, -5vh, 0) scale(1);
+    transform: translate3d(5vw, -4vh, 0) scale(1);
   }
 }
 
-@keyframes drift-c {
-  from {
-    transform: translate3d(-3vw, 2vh, 0) scale(0.94);
-  }
-  to {
-    transform: translate3d(4vw, -6vh, 0) scale(1.16);
-  }
-}
-
-@keyframes aurora {
-  from {
-    transform: translate3d(-14%, 0, 0) rotate(-2deg);
-  }
-  to {
-    transform: translate3d(14%, 0, 0) rotate(2deg);
-  }
-}
-
-/* Grao fino por cima de tudo: tira o aspecto de gradiente digital chapado
-   e da uma textura de papel ao off-white. */
+/*
+ * Grao de papel. SEM mix-blend-mode: a versao anterior usava multiply numa
+ * camada fixa de tela cheia, o que obriga o navegador a recompor tudo que
+ * esta embaixo a cada quadro — era o maior custo isolado do scroll. Um PNG
+ * escuro com opacidade baixa da o mesmo resultado de graca, e no celular
+ * ele nem entra.
+ */
 .grain {
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.032;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  display: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+@media (min-width: 1024px) {
+  .grain {
+    display: block;
+  }
 }
 
 /* ------------------------------------------------------------------ *
@@ -251,10 +212,10 @@ html.lenis body {
 
 .reveal {
   opacity: 0;
-  transform: translateY(22px);
+  transform: translateY(18px);
   transition:
-    opacity 1s var(--ease-out-soft),
-    transform 1s var(--ease-out-soft);
+    opacity 0.85s var(--ease-out-soft),
+    transform 0.85s var(--ease-out-soft);
 }
 
 .reveal.is-in {
@@ -263,11 +224,35 @@ html.lenis body {
 }
 
 /* ------------------------------------------------------------------ *
- * coreografia do palco do cerebro                                     *
+ * titulo que sobe palavra a palavra                                   *
  * ------------------------------------------------------------------ */
 
-/* Progresso de scroll escrito via JS em --p (0 -> 1). Usar calc() em cima
-   disso move o HTML sem custar um re-render do React por frame. */
+.split-w {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.split-i {
+  display: inline-block;
+  transform: translateY(115%);
+  opacity: 0;
+  transition:
+    transform 0.85s var(--ease-out-soft),
+    opacity 0.85s var(--ease-out-soft);
+}
+
+.split.is-in .split-i {
+  transform: none;
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ *
+ * coreografia do palco do cerebro (so no desktop)                     *
+ * ------------------------------------------------------------------ */
+
 .stage {
   --p: 0;
 }
@@ -278,14 +263,11 @@ html.lenis body {
   will-change: opacity, transform;
 }
 
-/* ja invisivel: sem isto os links do hero seguiriam clicaveis por baixo */
 .stage[data-past='true'] .hero-fade,
 .stage[data-past='true'] .scroll-cue {
   pointer-events: none;
 }
 
-/* Chega a opacidade cheia por volta de p=0.62 — antes disso o palco ainda
-   nem comecou a sair, entao da tempo de ler antes do bloco subir. */
 .manifesto-fade {
   opacity: calc((var(--p) - 0.32) * 3.4);
   transform: translateY(calc((1 - var(--p)) * 34px));
@@ -301,11 +283,7 @@ html.lenis body {
   display: block;
   width: 1px;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    var(--color-sage-400),
-    transparent
-  );
+  background: linear-gradient(to bottom, var(--color-brand-500), transparent);
   animation: cue 2.4s ease-in-out infinite;
   transform-origin: top;
 }
@@ -326,56 +304,6 @@ html.lenis body {
 }
 
 /* ------------------------------------------------------------------ *
- * acessibilidade                                                      *
- * ------------------------------------------------------------------ */
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
-  .hero-fade,
-  .manifesto-fade,
-  .scroll-cue {
-    opacity: 1;
-    transform: none;
-  }
-
-  .orb,
-  .aurora,
-  .scroll-cue-line::after {
-    animation: none;
-  }
-}
-
-/* ------------------------------------------------------------------ *
- * hero em janelas baixas                                              *
- * ------------------------------------------------------------------ */
-
-/*
- * Num notebook de 1440x640 o hero inteiro nao cabe: com items-center o
- * conteudo transborda para os dois lados e sobe por tras da barra fixa.
- * Estes dois blocos sao os primeiros a sair — o titulo e o CTA ficam.
- */
-@media (max-height: 820px) {
-  .hero-extras {
-    display: none;
-  }
-}
-
-@media (max-height: 780px) {
-  .scroll-cue {
-    display: none !important;
-  }
-}
-
-/* ------------------------------------------------------------------ *
  * barra de progresso do scroll                                        *
  * ------------------------------------------------------------------ */
 
@@ -389,46 +317,15 @@ html.lenis body {
   background: linear-gradient(
     90deg,
     var(--color-brand-400),
-    var(--color-brand-600) 60%,
-    var(--color-sand-400)
+    var(--color-brand-600) 55%,
+    var(--color-cream-400)
   );
   pointer-events: none;
   will-change: transform;
 }
 
 /* ------------------------------------------------------------------ *
- * titulo que sobe palavra a palavra                                   *
- * ------------------------------------------------------------------ */
-
-/*
- * Cada palavra vive numa janela com overflow hidden e sobe de dentro dela.
- * O padding/margin negativo existe porque, sem ele, o overflow cortaria as
- * descidas de "g", "p" e do cedilha.
- */
-.split-w {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
-}
-
-.split-i {
-  display: inline-block;
-  transform: translateY(115%);
-  opacity: 0;
-  transition:
-    transform 0.9s var(--ease-out-soft),
-    opacity 0.9s var(--ease-out-soft);
-}
-
-.split.is-in .split-i {
-  transform: none;
-  opacity: 1;
-}
-
-/* ------------------------------------------------------------------ *
- * cartoes com luz que segue o cursor                                  *
+ * cartoes com luz que segue o cursor (so em ponteiro fino)            *
  * ------------------------------------------------------------------ */
 
 .spot {
@@ -436,27 +333,29 @@ html.lenis body {
   isolation: isolate;
 }
 
-.spot::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: radial-gradient(
-    16rem 16rem at var(--mx, 50%) var(--my, 0%),
-    rgba(74, 157, 129, 0.17),
-    transparent 68%
-  );
-  opacity: 0;
-  transition: opacity 0.45s ease;
-}
+@media (hover: hover) and (pointer: fine) {
+  .spot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(
+      14rem 14rem at var(--mx, 50%) var(--my, 0%),
+      rgba(134, 164, 133, 0.24),
+      transparent 68%
+    );
+    opacity: 0;
+    transition: opacity 0.45s ease;
+  }
 
-.spot:hover::before {
-  opacity: 1;
+  .spot:hover::before {
+    opacity: 1;
+  }
 }
 
 /* ------------------------------------------------------------------ *
- * equalizador: o ornamento sonoro entre secoes                        *
+ * equalizador — o ornamento sonoro                                    *
  * ------------------------------------------------------------------ */
 
 .eq {
@@ -464,7 +363,7 @@ html.lenis body {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 26px;
+  height: 24px;
 }
 
 .eq span {
@@ -472,7 +371,6 @@ html.lenis body {
   width: 2px;
   border-radius: 9999px;
   background: currentColor;
-  transform-origin: center;
   animation: eq 1.9s ease-in-out infinite;
 }
 
@@ -483,8 +381,27 @@ html.lenis body {
     opacity: 0.35;
   }
   50% {
-    height: 22px;
+    height: 20px;
     opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * mascote                                                             *
+ * ------------------------------------------------------------------ */
+
+/* flutuacao lenta — o personagem "respira" em vez de ficar colado */
+.flutua {
+  animation: flutua 6s ease-in-out infinite;
+}
+
+@keyframes flutua {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 
@@ -494,15 +411,15 @@ html.lenis body {
 
 .zap {
   position: fixed;
-  right: clamp(1rem, 3vw, 2rem);
-  bottom: clamp(1rem, 3vw, 2rem);
+  right: clamp(0.9rem, 3vw, 2rem);
+  bottom: clamp(0.9rem, 3vw, 2rem);
   z-index: 45;
   transform: translateY(1.5rem) scale(0.85);
   opacity: 0;
   pointer-events: none;
   transition:
-    transform 0.6s var(--ease-out-soft),
-    opacity 0.6s var(--ease-out-soft);
+    transform 0.5s var(--ease-out-soft),
+    opacity 0.5s var(--ease-out-soft);
 }
 
 .zap[data-visivel='true'] {
@@ -511,23 +428,22 @@ html.lenis body {
   pointer-events: auto;
 }
 
-/* anel que pulsa por tras do botao — chama sem piscar */
 .zap-anel {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  background: rgba(37, 168, 108, 0.45);
-  animation: anel 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  background: rgba(37, 168, 108, 0.4);
+  animation: anel 2.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
 }
 
 @keyframes anel {
   0% {
     transform: scale(1);
-    opacity: 0.55;
+    opacity: 0.5;
   }
   70%,
   100% {
-    transform: scale(1.85);
+    transform: scale(1.8);
     opacity: 0;
   }
 }
@@ -546,7 +462,7 @@ html.lenis body {
   background: currentColor;
   transform: scaleX(0);
   transform-origin: right;
-  transition: transform 0.45s var(--ease-out-soft);
+  transition: transform 0.4s var(--ease-out-soft);
 }
 
 .link-sub:hover::after,
@@ -556,31 +472,51 @@ html.lenis body {
 }
 
 /* ------------------------------------------------------------------ *
- * paralaxe                                                            *
+ * paralaxe (desligada em telas pequenas)                              *
  * ------------------------------------------------------------------ */
 
 .paralaxe {
   transform: translate3d(0, var(--py, 0px), 0);
-  will-change: transform;
 }
 
+@media (min-width: 1024px) {
+  .paralaxe {
+    will-change: transform;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * acessibilidade                                                      *
+ * ------------------------------------------------------------------ */
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal,
   .split-i {
-    transform: none;
     opacity: 1;
+    transform: none;
     transition: none;
   }
 
+  .hero-fade,
+  .manifesto-fade,
+  .scroll-cue {
+    opacity: 1;
+    transform: none;
+  }
+
+  .orb,
   .eq span,
-  .zap-anel {
+  .zap-anel,
+  .flutua,
+  .scroll-cue-line::after {
     animation: none;
   }
 
   .paralaxe {
     transform: none;
-  }
-
-  .zap {
-    transition: none;
   }
 }

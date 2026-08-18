@@ -5,6 +5,31 @@ Site do espaço de musicoterapia da Janaina Lima Zumach.
 **Stack:** React 18 + Vite + Tailwind CSS 4 + React Three Fiber (Three.js) + Lenis.
 **Tipografia:** Playfair Display (títulos) + Manrope (texto).
 
+## Marca
+
+Paleta **oficial**, em `@theme` no `src/index.css`:
+
+| Nome | Hex | Uso |
+| --- | --- | --- |
+| Eucalípto | `#86A485` | verde principal (`brand-500`) |
+| Passeio Ecológico | `#B7CDB5` | verde claro (`brand-300`) |
+| Algodão Egípcio | `#EEE3D5` | bege (`cream-200`) |
+| Branco Gelo | `#FCF4E7` | fundo da página (`cream-50`) |
+| Marrom da logo | `#56361A` | tinta do texto |
+
+O verde da paleta é o mesmo da linha de batimento da logo — amostrado do
+arquivo, deu `#84A082`. Os tons intermediários foram derivados desses cinco,
+e os de texto respeitam contraste AA sobre o Branco Gelo.
+
+Arquivos em `src/assets/`, todos com o fundo branco removido por
+preenchimento a partir das bordas **mais** rotulagem de componentes fechados
+(o vão entre as pernas do mascote e o miolo do selo não se ligam à borda):
+
+- `logo.webp` — barra e rodapé; sobre a seção escura ela inverte para clara
+- `mascote.webp` — o personagem das apostilas
+- `selo-musicoterapia.webp` — emblema da **profissão**, não da Music'art;
+  aparece com legenda, em escala pequena, junto das credenciais e no rodapé
+
 ```bash
 npm install
 npm run dev     # desenvolvimento
@@ -105,22 +130,38 @@ O scroll suave é do **Lenis**, que continua chamando `window.scrollTo` — ent�
 
 ## Performance
 
-- Abaixo de `lg` (1024px) o cérebro desce para baixo do texto e a interação
-  de ponteiro é desligada — é o mesmo breakpoint em que a coluna de texto do
-  hero passa a ocupar a largura toda. Densidade: 26.000 pontos no desktop,
-  16.000 no tablet, 9.000 abaixo de 768px, com DPR limitado a 1.25.
-- O X de repouso do cérebro é calculado da largura real da janela, não fixo
-  em unidades de mundo: uma unidade vale mais pixels quanto mais alta é a
-  tela, então um valor fixo encostava na borda direita em telas altas e
-  sobrava espaço nas baixas.
-- A nuvem leva ~250 ms para ser gerada, então a cena monta em
+O site travava no celular. As causas, em ordem de peso, e o que foi feito:
+
+1. **O three.js ia para o celular sem nunca ser usado.** A cena agora entra
+   por `lazy()` e só é montada acima de 1024px com ponteiro fino. O bundle
+   inicial do celular caiu de ~285 KB para **58 KB** gzip.
+2. **`mix-blend-mode: multiply` numa camada fixa de tela cheia** (o grão de
+   papel) obriga o navegador a recompor tudo que está embaixo a cada quadro.
+   Foi removido; o grão virou um PNG de opacidade baixa, e só no desktop.
+3. **`background-attachment: fixed` no `body`** força repintura do fundo
+   inteiro durante o scroll. Removido.
+4. **Quatro manchas grandes animadas + uma faixa de 220% da largura**, todas
+   com `will-change`. Viraram três, e a animação só existe acima de 1024px.
+5. **Lenis rodando um rAF por quadro no celular** para reimplementar um
+   scroll que o sistema já faz melhor, na thread de composição. Desligado no
+   celular; só carrega no desktop, e também por `import()` dinâmico.
+6. **`backdrop-blur` em dezenas de cartões.** Substituído por cor sólida; só
+   a barra fixa mantém o blur, e apenas no desktop.
+7. **O brilho que segue o cursor** só é declarado sob
+   `@media (hover: hover) and (pointer: fine)`.
+
+O que continua valendo na cena 3D:
+
+- 20.000 pontos, um único draw call (`THREE.Points` + `ShaderMaterial`), sem
+  antialias e sem depth buffer.
+- O X de repouso é calculado da largura real da janela, não fixo em unidades
+  de mundo: uma unidade vale mais pixels quanto mais alta é a tela, então um
+  valor fixo encostava na borda direita em telas altas.
+- A nuvem leva ~200 ms para ser gerada, então a cena monta em
   `requestIdleCallback` — o texto do hero aparece antes.
 - `PerformanceMonitor` (drei) reduz o DPR se o framerate cair.
-- `IntersectionObserver` + `visibilitychange` congelam o render loop quando o
-  palco sai da tela ou a aba perde o foco.
-- `prefers-reduced-motion` desliga a animação, o scroll suave e as revelações.
-- Um único draw call: `THREE.Points` com `ShaderMaterial`, sem antialias e sem
-  depth buffer.
+- `IntersectionObserver` + `visibilitychange` congelam o render loop.
+- `prefers-reduced-motion` desliga animação, scroll suave e revelações.
 
 ## Pendências antes de ir ao ar
 
@@ -129,9 +170,8 @@ O scroll suave é do **Lenis**, que continua chamando `window.scrollTo` — ent�
 - [ ] **E-mail, endereço e redes sociais.** Ainda não informados, então não
       aparecem em lugar nenhum. Quando chegarem, entram em
       `src/lib/contato.js` e no rodapé.
-- [ ] **Paleta oficial da marca.** A atual foi derivada da foto da Janaina —
-      verde do logo `#206050`, sálvia da parede `#7b876e`, areia da almofada
-      `#bc9d91`. Todos os tokens ficam no `@theme` de `src/index.css`.
+- [x] ~~Paleta oficial da marca~~ — aplicada (ver **Marca**, acima).
+- [x] ~~Logo, mascote e emblema da musicoterapia~~ — recortados e aplicados.
 - [ ] **Texto da Music'art.** O material recebido corta em "é uma prática de
       ensino que utiliza". Falta o método próprio, como são as sessões, para
       quem e onde fica. Ver comentário no topo de `Espaco.jsx`.

@@ -34,7 +34,7 @@ export default function Espaco() {
   return (
     <section
       id="espaco"
-      className="relative isolate overflow-hidden bg-brand-950 py-24 text-white sm:py-32 lg:py-40"
+      className="relative isolate overflow-hidden bg-brand-900 py-16 text-cream-50 sm:py-24 lg:py-36"
     >
       {/* brilho difuso: tira o chapado do bloco escuro */}
       <div
@@ -42,13 +42,13 @@ export default function Espaco() {
         aria-hidden="true"
         style={{
           background:
-            'radial-gradient(45rem 32rem at 78% 6%, rgba(74,157,129,0.24), transparent 62%),' +
-            'radial-gradient(38rem 30rem at 8% 92%, rgba(188,157,145,0.14), transparent 65%)',
+            'radial-gradient(45rem 32rem at 78% 6%, rgba(183,205,181,0.2), transparent 62%),' +
+            'radial-gradient(38rem 30rem at 8% 92%, rgba(238,227,213,0.13), transparent 65%)',
         }}
       />
 
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+        <div className="grid gap-8 sm:gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-6">
             <SectionHead
               tone="dark"
@@ -59,25 +59,25 @@ export default function Espaco() {
           </div>
 
           <Reveal delay={120} className="lg:col-span-6 lg:pt-24">
-            <p className="font-display text-[clamp(1.25rem,2.6vw,1.65rem)] font-medium italic leading-[1.5] text-brand-100/90">
+            <p className="font-display text-[clamp(1.1rem,3.6vw,1.65rem)] font-medium italic leading-[1.5] text-cream-200/90">
               A técnica entra depois. Primeiro é preciso que a pessoa queira
               estar ali.
             </p>
           </Reveal>
         </div>
 
-        <ul className="mt-20 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:mt-24 lg:grid-cols-4">
+        <ul className="mt-12 grid gap-x-8 gap-y-8 sm:mt-16 sm:grid-cols-2 sm:gap-y-11 lg:mt-24 lg:grid-cols-4">
           {PILARES.map(({ titulo, texto }, i) => (
             <Reveal as="li" key={titulo} delay={i * 80}>
-              <div className="flex items-baseline gap-3 border-t border-white/15 pt-6">
-                <span className="font-display text-[13px] font-medium tabular-nums text-brand-400">
+              <div className="flex items-baseline gap-3 border-t border-cream-50/20 pt-5 sm:pt-6">
+                <span className="font-display text-[13px] font-medium tabular-nums text-brand-300">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <h3 className="font-display text-[1.22rem] font-semibold leading-snug tracking-[-0.01em] text-white">
+                <h3 className="font-display text-[1.05rem] font-semibold leading-snug tracking-[-0.01em] text-cream-50 sm:text-[1.2rem]">
                   {titulo}
                 </h3>
               </div>
-              <p className="mt-4 text-[15px] font-light leading-[1.72] text-brand-100/70">
+              <p className="mt-3 text-[13.5px] leading-[1.65] text-cream-200/75 sm:mt-4 sm:text-[15px] sm:leading-[1.72]">
                 {texto}
               </p>
             </Reveal>

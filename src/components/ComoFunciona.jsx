@@ -59,7 +59,7 @@ const MODALIDADES = [
 
 export default function ComoFunciona() {
   return (
-    <section id="como-funciona" className="relative py-24 sm:py-32 lg:py-40">
+    <section id="como-funciona" className="relative py-16 sm:py-24 lg:py-36">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
         <SectionHead
           align="center"
@@ -68,24 +68,24 @@ export default function ComoFunciona() {
           lead="Nada aqui começa por técnica. Começa por entender quem chegou."
         />
 
-        <ol className="relative mt-16 grid gap-10 lg:mt-20 lg:grid-cols-3 lg:gap-8">
+        <ol className="relative mt-10 grid gap-8 sm:mt-14 sm:gap-10 lg:mt-20 lg:grid-cols-3 lg:gap-8">
           {/* fio que costura os tres passos no desktop */}
           <span
-            className="pointer-events-none absolute left-0 right-0 top-[26px] hidden h-px bg-gradient-to-r from-transparent via-sage-300 to-transparent lg:block"
+            className="pointer-events-none absolute left-0 right-0 top-[26px] hidden h-px bg-gradient-to-r from-transparent via-brand-400 to-transparent lg:block"
             aria-hidden="true"
           />
 
           {PASSOS.map(({ titulo, texto }, i) => (
             <Reveal as="li" key={titulo} delay={i * 100} className="relative lg:px-6 lg:text-center">
-              <span className="relative z-10 inline-flex h-[52px] w-[52px] items-center justify-center rounded-full border border-brand-200 bg-page font-display text-[15px] font-medium tabular-nums text-brand-600">
+              <span className="relative z-10 inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand-400 bg-page font-display text-[14px] font-semibold tabular-nums text-brand-800 sm:h-[52px] sm:w-[52px] sm:text-[15px]">
                 {String(i + 1).padStart(2, '0')}
               </span>
 
-              <h3 className="mt-6 font-display text-[1.35rem] font-semibold leading-snug tracking-[-0.012em] text-ink">
+              <h3 className="mt-4 font-display text-[1.15rem] font-semibold leading-snug tracking-[-0.012em] text-ink sm:mt-6 sm:text-[1.32rem]">
                 {titulo}
               </h3>
 
-              <p className="mx-auto mt-3 max-w-sm text-[15.5px] font-light leading-[1.72] text-ink-soft">
+              <p className="mx-auto mt-2 max-w-sm text-[14px] leading-[1.65] text-ink-soft sm:mt-3 sm:text-[15.5px] sm:leading-[1.72]">
                 {texto}
               </p>
             </Reveal>
@@ -93,20 +93,20 @@ export default function ComoFunciona() {
         </ol>
 
         {/* modalidades */}
-        <div className="mt-24 border-t border-sage-200/80 pt-16 sm:mt-28">
+        <div className="mt-14 border-t border-cream-300/80 pt-10 sm:mt-24 sm:pt-16">
           <Reveal>
-            <h3 className="text-center text-[11px] font-medium uppercase tracking-[0.24em] text-ink-mute">
+            <h3 className="text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-mute sm:text-[11px] sm:tracking-[0.24em]">
               Modalidades de atendimento
             </h3>
           </Reveal>
 
-          <ul className="mt-10 grid gap-5 sm:grid-cols-3">
+          <ul className="mt-6 grid gap-3.5 sm:mt-10 sm:grid-cols-3 sm:gap-5">
             {MODALIDADES.map(({ titulo, texto, icone }, i) => (
               <Reveal as="li" key={titulo} delay={i * 80}>
-                <div className="flex h-full items-start gap-4 rounded-2xl border border-sage-200/70 bg-white/50 p-6 backdrop-blur-sm transition-colors duration-500 hover:border-brand-300/70 hover:bg-white/75">
+                <div className="flex h-full items-start gap-3.5 rounded-2xl border border-cream-300/70 bg-cream-100/70 p-4 transition-colors duration-500 hover:border-brand-400/70 hover:bg-cream-100 sm:gap-4 sm:p-6">
                   <svg
                     viewBox="0 0 24 24"
-                    className="mt-0.5 h-5 w-5 shrink-0 text-brand-600"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-brand-700"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.4"
@@ -117,10 +117,10 @@ export default function ComoFunciona() {
                     {icone}
                   </svg>
                   <div>
-                    <h4 className="text-[15.5px] font-normal text-ink">
+                    <h4 className="text-[15px] font-semibold text-ink sm:text-[15.5px]">
                       {titulo}
                     </h4>
-                    <p className="mt-1.5 text-[14.5px] font-light leading-[1.65] text-ink-soft">
+                    <p className="mt-1 text-[13.5px] leading-[1.6] text-ink-soft sm:mt-1.5 sm:text-[14.5px] sm:leading-[1.65]">
                       {texto}
                     </p>
                   </div>

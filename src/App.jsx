@@ -1,8 +1,6 @@
-import { useEffect, useRef } from 'react'
-import Lenis from 'lenis'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 
 import Nav from './components/Nav.jsx'
-import BrainScene from './components/BrainScene.jsx'
 import Hero from './components/Hero.jsx'
 import Manifesto from './components/Manifesto.jsx'
 import Beneficios from './components/Beneficios.jsx'
@@ -14,73 +12,83 @@ import Contato from './components/Contato.jsx'
 import Footer from './components/Footer.jsx'
 import WhatsAppFloat from './components/WhatsAppFloat.jsx'
 
-const NAV_OFFSET = -76
+/*
+ * A cena 3D so e BAIXADA no desktop. Antes o bundle do three.js (~700 KB)
+ * ia para o celular junto com o resto, mesmo sem nunca ser usado la.
+ */
+const BrainScene = lazy(() => import('./components/BrainScene.jsx'))
+
+const NAV_OFFSET = -72
+
+/** Ponto em que o layout deixa de empilhar e o cerebro 3D entra. */
+const consultarDesktop = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(min-width: 1024px) and (pointer: fine)').matches
 
 export default function App() {
   const stageRef = useRef(null)
   const progressRef = useRef(0)
   const barraRef = useRef(null)
 
-  /**
-   * Scroll suave. O Lenis nao troca o scroll nativo por um transform: ele
-   * continua chamando window.scrollTo, entao IntersectionObserver, sticky,
-   * ancoras e o listener de progresso abaixo seguem funcionando.
-   */
+  /* lido ja na primeira renderizacao: se comecasse falso, o desktop pintaria
+     a versao mobile por um quadro antes de trocar */
+  const [desktop, setDesktop] = useState(consultarDesktop)
+
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    const lenis = new Lenis({
-      duration: 1.15,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      touchMultiplier: 1.7,
-    })
-
-    let frame = requestAnimationFrame(function raf(time) {
-      lenis.raf(time)
-      frame = requestAnimationFrame(raf)
-    })
-
-    // ancoras precisam passar pelo Lenis, senao o salto e instantaneo
-    const onClick = (event) => {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return
-      const link = event.target.closest?.('a[href^="#"]')
-      if (!link) return
-
-      const href = link.getAttribute('href')
-      if (!href || href.length < 2) return
-
-      const target = document.querySelector(href)
-      if (!target) return
-
-      event.preventDefault()
-      lenis.scrollTo(href === '#topo' ? 0 : target, { offset: NAV_OFFSET })
-    }
-
-    document.addEventListener('click', onClick)
-    return () => {
-      cancelAnimationFrame(frame)
-      document.removeEventListener('click', onClick)
-      lenis.destroy()
-    }
+    const mq = window.matchMedia('(min-width: 1024px) and (pointer: fine)')
+    const sync = () => setDesktop(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
   }, [])
 
   /**
-   * Um unico listener alimenta as duas pontas da coreografia: a variavel CSS
-   * --p (fades do HTML, sem re-render do React) e o progressRef, lido dentro
-   * do useFrame da cena 3D.
+   * Scroll suave — SO no desktop.
+   *
+   * No celular o Lenis rodava um rAF por quadro para reimplementar um scroll
+   * que o sistema ja faz nativamente melhor (e com a rolagem entregue a
+   * thread de composicao). Era custo puro, e uma das causas do travamento.
    */
   useEffect(() => {
-    const el = stageRef.current
-    if (!el) return
+    if (!desktop) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
+    let lenis
+    let frame
+    let cancelado = false
+
+    import('lenis').then(({ default: Lenis }) => {
+      if (cancelado) return
+      lenis = new Lenis({
+        duration: 1.1,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+      })
+      frame = requestAnimationFrame(function raf(time) {
+        lenis.raf(time)
+        frame = requestAnimationFrame(raf)
+      })
+    })
+
+    return () => {
+      cancelado = true
+      if (frame) cancelAnimationFrame(frame)
+      if (lenis) lenis.destroy()
+    }
+  }, [desktop])
+
+  /**
+   * Progresso do scroll: alimenta a barra do topo sempre, e — quando existe
+   * palco — a variavel CSS --p e o progressRef lido dentro do useFrame da
+   * cena 3D. Um listener so, sempre em rAF.
+   */
+  useEffect(() => {
     let ticking = false
     let past = null
 
     const update = () => {
       ticking = false
 
-      // barra de progresso: mesma passada de rAF, sem listener proprio
       const barra = barraRef.current
       if (barra) {
         const total = document.documentElement.scrollHeight - window.innerHeight
@@ -88,6 +96,8 @@ export default function App() {
         barra.style.setProperty('--sp', sp.toFixed(4))
       }
 
+      const el = stageRef.current
+      if (!el) return
       const travel = el.offsetHeight - window.innerHeight
       if (travel <= 0) return
 
@@ -117,18 +127,41 @@ export default function App() {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
+  }, [desktop])
+
+  /* ancoras precisam de compensacao pela barra fixa; com Lenis ativo o
+     proprio scroll-behavior suave do CSS fica desligado, entao o scrollIntoView
+     nativo continua valendo nos dois casos */
+  useEffect(() => {
+    const onClick = (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey)
+        return
+      const link = event.target.closest?.('a[href^="#"]')
+      if (!link) return
+      const href = link.getAttribute('href')
+      if (!href || href.length < 2) return
+      const alvo = document.querySelector(href)
+      if (!alvo) return
+
+      event.preventDefault()
+      const y =
+        href === '#topo'
+          ? 0
+          : alvo.getBoundingClientRect().top + window.scrollY + NAV_OFFSET
+      window.scrollTo({ top: y, behavior: 'smooth' })
+    }
+
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
   }, [])
 
   return (
     <>
-      {/* fundo ambiente: manchas difusas + grao, atras de todo o conteudo */}
+      {/* fundo ambiente: manchas difusas atras de todo o conteudo */}
       <div className="ambient" aria-hidden="true">
         <span className="orb orb-1" />
         <span className="orb orb-2" />
         <span className="orb orb-3" />
-        <span className="orb orb-4" />
-        <span className="aurora" />
-        <span className="vinheta" />
       </div>
       <div className="grain" aria-hidden="true" />
 
@@ -137,20 +170,29 @@ export default function App() {
       <Nav />
 
       <main className="relative z-10">
-        {/* Palco: o cerebro fica preso no topo enquanto estas ~2,3 telas rolam */}
-        <div ref={stageRef} className="stage relative h-[230svh]">
-          <div className="sticky top-0 h-svh overflow-hidden">
-            <BrainScene progressRef={progressRef} />
+        {desktop ? (
+          /* Palco: o cerebro fica preso no topo enquanto ~2,3 telas rolam */
+          <div ref={stageRef} className="stage relative h-[230svh]">
+            <div className="sticky top-0 h-svh overflow-hidden">
+              <Suspense fallback={null}>
+                <BrainScene progressRef={progressRef} />
+              </Suspense>
 
-            <div className="relative z-10 h-full">
-              <Hero />
-            </div>
+              <div className="relative z-10 h-full">
+                <Hero />
+              </div>
 
-            <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center pb-[8svh]">
-              <Manifesto />
+              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center pb-[8svh]">
+                <Manifesto />
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <>
+            <Hero mobile />
+            <Manifesto estatico />
+          </>
+        )}
 
         <Beneficios />
         <Sobre />

@@ -5,9 +5,9 @@ import * as THREE from 'three'
 import { buildBrainCloud } from '../lib/brainGeometry'
 
 /* Verde da marca aplicado as particulas. */
-const COLOR_NEAR = '#1a5f4d' // pontos da frente: esmeralda profundo do logo
-const COLOR_FAR = '#86c5aa' // pontos ao fundo: dissolvem no off-white
-const COLOR_GLOW = '#42c497' // realce sob o cursor e nos disparos
+const COLOR_NEAR = '#33452c' // pontos da frente: eucalipto escurecido
+const COLOR_FAR = '#9cba99' // Passeio Ecologico: dissolve no Branco Gelo
+const COLOR_GLOW = '#86a485' // Eucalipto — realce sob o cursor e nos disparos
 
 const vertexShader = /* glsl */ `
   uniform float uTime;
@@ -113,7 +113,7 @@ const fragmentShader = /* glsl */ `
 
     // contraste forte entre frente e verso: e o que separa "objeto solido"
     // de "poeira" no fundo claro
-    float facing = mix(0.07, 1.0, vFront);
+    float facing = mix(0.09, 1.0, vFront);
 
     vec3 color = mix(uColorNear, uColorFar, depth);
     color = mix(color, uColorFar, (1.0 - facing) * 0.7);
@@ -122,7 +122,7 @@ const fragmentShader = /* glsl */ `
     color = mix(color, uColorGlow, clamp(vGlow * 0.55 + vSpark, 0.0, 1.0));
 
     float alpha = sprite * uOpacity * facing;
-    alpha *= mix(1.0, 0.26, depth);
+    alpha *= mix(1.0, 0.3, depth);
     alpha *= 1.0 + vGlow * 0.4 + vSpark * 0.9;
 
     gl_FragColor = vec4(color, clamp(alpha, 0.0, 1.0));
@@ -141,7 +141,7 @@ const REST_YAW = -1.6
 /* folga entre o cerebro e a borda direita, em fracao da largura da janela */
 const GUTTER = 0.055
 
-function BrainParticles({ count, interactive, reducedMotion, pointSize, compact, progressRef }) {
+function BrainParticles({ count, interactive, reducedMotion, pointSize, progressRef }) {
   const groupRef = useRef()
   const pointer = useRef(new THREE.Vector2(0, 0))
   const targetPointer = useRef(new THREE.Vector2(0, 0))
@@ -221,16 +221,14 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
     }
   }, [gl, interactive])
 
-  // Posicao de repouso no hero. No desktop o cerebro ocupa a coluna da
-  // direita; abaixo de lg ele desce para o terco inferior — a tela e estreita
-  // demais para dividir espaco com o texto — e encolhe para nao ser cortado.
-  const restY = compact ? -1.45 : -0.3
-  const baseScale = compact ? 0.54 : 1.0
+  // Repouso: coluna da direita, centrado na vertical do hero.
+  const restY = -0.3
+  const baseScale = 1.0
 
   // destino no fim do scroll: desce para fora do enquadramento, deixando so
   // uma "linha do horizonte" de particulas embaixo do bloco de leitura
   const exitY = -1.85
-  const maxZoom = compact ? 0.14 : 0.16
+  const maxZoom = 0.16
 
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.05)
@@ -265,16 +263,13 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
      * sobrava espaco nas baixas. Aqui o cerebro fica sempre encostado a
      * direita, com a mesma folga proporcional.
      */
-    let restX = 0
-    if (!compact) {
-      const halfWorldH = Math.tan(fov / 2) * Math.abs(camera.position.z)
-      const pxPorUnidade = size.height / 2 / halfWorldH
-      const meiaLargura = radiusXZ * zoom
-      restX = Math.max(
-        0.4,
-        (size.width * (0.5 - GUTTER)) / pxPorUnidade - meiaLargura,
-      )
-    }
+    const halfWorldH = Math.tan(fov / 2) * Math.abs(camera.position.z)
+    const pxPorUnidade = size.height / 2 / halfWorldH
+    const meiaLargura = radiusXZ * zoom
+    const restX = Math.max(
+      0.4,
+      (size.width * (0.5 - GUTTER)) / pxPorUnidade - meiaLargura,
+    )
 
     group.position.x = restX * (1 - p * 0.85)
     group.position.y = restY + (exitY - restY) * p
@@ -319,52 +314,38 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, compact,
 }
 
 /**
- * Camada 3D que fica presa (sticky) no topo enquanto o palco rola.
- * O progresso do scroll chega por ref, entao nada aqui re-renderiza o React.
+ * Camada 3D presa (sticky) no topo enquanto o palco rola.
+ *
+ * So e montada no desktop — o App carrega este modulo com lazy(), entao o
+ * three.js nem chega ao celular. O progresso do scroll chega por ref, logo
+ * nada aqui re-renderiza o React.
  */
 export default function BrainScene({ progressRef }) {
   const containerRef = useRef(null)
   const [mounted, setMounted] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [stacked, setStacked] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
   const [visible, setVisible] = useState(true)
   const [dpr, setDpr] = useState(1.5)
 
   useEffect(() => {
-    const mqMobile = window.matchMedia('(max-width: 767px)')
-    // Abaixo de lg o texto do hero ja ocupa a largura toda, entao o cerebro
-    // precisa sair de perto dele — mesmo breakpoint que o layout usa.
-    const mqStacked = window.matchMedia('(max-width: 1023px)')
     const mqMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const mqCoarse = window.matchMedia('(pointer: coarse)')
-
     const sync = () => {
-      setIsMobile(mqMobile.matches)
-      setStacked(mqStacked.matches)
       setReducedMotion(mqMotion.matches)
-      setDpr(
-        mqMobile.matches || mqCoarse.matches
-          ? 1.25
-          : Math.min(window.devicePixelRatio, 2),
-      )
+      // acima de 2x o ganho visual e nulo e o custo por pixel quadruplica
+      setDpr(Math.min(window.devicePixelRatio, 2))
     }
     sync()
 
-    // A nuvem leva ~250ms para ser gerada. Montar depois da primeira pintura
+    // A nuvem leva ~200ms para ser gerada. Montar depois da primeira pintura
     // tira esse custo do caminho critico: o texto do hero aparece antes.
     const idle = window.requestIdleCallback
       ? window.requestIdleCallback(() => setMounted(true), { timeout: 600 })
       : setTimeout(() => setMounted(true), 90)
 
-    mqMobile.addEventListener('change', sync)
-    mqStacked.addEventListener('change', sync)
     mqMotion.addEventListener('change', sync)
     return () => {
       if (window.cancelIdleCallback) window.cancelIdleCallback(idle)
       else clearTimeout(idle)
-      mqMobile.removeEventListener('change', sync)
-      mqStacked.removeEventListener('change', sync)
       mqMotion.removeEventListener('change', sync)
     }
   }, [])
@@ -387,9 +368,6 @@ export default function BrainScene({ progressRef }) {
       document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
-
-  // densidade: -65% em telas < 768px para nao derrubar o framerate no celular
-  const count = isMobile ? 9000 : stacked ? 16000 : 26000
 
   return (
     <div
@@ -416,11 +394,10 @@ export default function BrainScene({ progressRef }) {
             flipflops={3}
           />
           <BrainParticles
-            count={count}
-            pointSize={stacked ? 0.019 : 0.0125}
-            interactive={!stacked}
+            count={20000}
+            pointSize={0.0135}
+            interactive
             reducedMotion={reducedMotion}
-            compact={stacked}
             progressRef={progressRef}
           />
         </Canvas>

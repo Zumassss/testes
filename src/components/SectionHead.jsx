@@ -2,8 +2,8 @@ import Reveal from './Reveal.jsx'
 import SplitReveal from './SplitReveal.jsx'
 
 /**
- * Cabecalho padrao das secoes: etiqueta, titulo e (opcional) linha de apoio.
- * Centraliza a escala tipografica num lugar so — se ela mudar, muda aqui.
+ * Cabeçalho padrão das seções: etiqueta, título e (opcional) linha de apoio.
+ * Centraliza a escala tipográfica num lugar só — se ela mudar, muda aqui.
  */
 export default function SectionHead({
   label,
@@ -22,12 +22,12 @@ export default function SectionHead({
     >
       <Reveal>
         <span
-          className={`flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.24em] ${
+          className={`flex items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.2em] sm:gap-3 sm:text-[11px] sm:tracking-[0.24em] ${
             centered ? 'justify-center' : ''
-          } ${dark ? 'text-brand-300' : 'text-brand-600'}`}
+          } ${dark ? 'text-brand-300' : 'text-brand-700'}`}
         >
           <span
-            className={`h-px w-6 ${dark ? 'bg-brand-400/60' : 'bg-brand-400/70'}`}
+            className={`h-px w-5 sm:w-6 ${dark ? 'bg-brand-400/70' : 'bg-brand-500/80'}`}
             aria-hidden="true"
           />
           {label}
@@ -37,16 +37,16 @@ export default function SectionHead({
       <SplitReveal
         text={title}
         delay={90}
-        className={`mt-6 font-display text-[2rem] font-semibold leading-[1.1] tracking-[-0.028em] text-balance sm:text-[2.6rem] lg:text-[3rem] ${
-          dark ? 'text-white' : 'text-ink'
+        className={`mt-4 font-display text-[clamp(1.5rem,5.6vw,2rem)] font-semibold leading-[1.14] tracking-[-0.025em] text-balance sm:mt-6 sm:text-[2.4rem] sm:leading-[1.1] lg:text-[2.9rem] ${
+          dark ? 'text-cream-50' : 'text-ink'
         }`}
       />
 
       {lead && (
         <Reveal delay={150}>
           <p
-            className={`mt-6 text-[16.5px] font-light leading-[1.75] sm:text-[17.5px] ${
-              dark ? 'text-brand-100/85' : 'text-ink-soft'
+            className={`mt-4 text-[15px] leading-[1.68] sm:mt-6 sm:text-[16.5px] sm:leading-[1.75] lg:text-[17.5px] ${
+              dark ? 'text-cream-200/85' : 'text-ink-soft'
             }`}
           >
             {lead}

@@ -1,4 +1,5 @@
 import Reveal from './Reveal.jsx'
+import Mascote from './Mascote.jsx'
 import { WHATSAPP_LINK, WHATSAPP_NUMERO } from '../lib/contato.js'
 
 /**
@@ -8,39 +9,39 @@ import { WHATSAPP_LINK, WHATSAPP_NUMERO } from '../lib/contato.js'
 
 export default function Contato() {
   return (
-    <section id="contato" className="relative pb-24 pt-8 sm:pb-32">
+    <section id="contato" className="relative pb-16 pt-4 sm:pb-24">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
         <Reveal>
-          <div className="relative isolate overflow-hidden rounded-[2rem] border border-sage-200/80 px-7 py-16 text-center sm:rounded-[2.5rem] sm:px-12 sm:py-20 lg:py-24">
+          <div className="relative isolate overflow-hidden rounded-[1.5rem] border border-cream-300/80 px-5 py-12 text-center sm:rounded-[2.5rem] sm:px-12 sm:py-20 lg:py-24">
             <div
               className="pointer-events-none absolute inset-0 -z-10"
               aria-hidden="true"
               style={{
                 background:
-                  'linear-gradient(160deg, rgba(240,247,244,0.95), rgba(246,236,231,0.85))',
+                  'linear-gradient(160deg, rgba(231,239,230,0.95), rgba(238,227,213,0.9))',
               }}
             />
 
-            <span className="text-[11px] font-medium uppercase tracking-[0.24em] text-brand-600">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-800 sm:text-[11px] sm:tracking-[0.24em]">
               Primeiro passo
             </span>
 
-            <h2 className="mx-auto mt-6 max-w-2xl font-display text-[clamp(2rem,4.6vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink text-balance">
+            <h2 className="mx-auto mt-4 max-w-2xl font-display text-[clamp(1.55rem,5.6vw,3rem)] font-semibold leading-[1.12] tracking-[-0.028em] text-ink text-balance sm:mt-6">
               Vamos conversar sobre o que você precisa.
             </h2>
 
-            <p className="mx-auto mt-6 max-w-xl text-[16.5px] font-light leading-[1.75] text-ink-soft sm:text-[17.5px]">
+            <p className="mx-auto mt-4 max-w-xl text-[14.5px] leading-[1.68] text-ink-soft sm:mt-6 sm:text-[16.5px] sm:leading-[1.75] lg:text-[17.5px]">
               A primeira conversa serve para entender a história, o momento e os
               objetivos de quem chega. A partir dela, o plano de atendimento é
               construído junto.
             </p>
 
-            <div className="mt-11 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:mt-11 sm:flex-row sm:gap-5">
               <a
                 href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 rounded-full bg-brand-600 px-8 py-4 text-[15px] font-medium text-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-800/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-brand-700 px-7 py-3.5 text-[15px] font-semibold text-cream-50 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-brand-800 hover:shadow-lg hover:shadow-brand-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2 sm:w-auto sm:px-8 sm:py-4"
               >
                 <svg
                   className="h-[18px] w-[18px]"
@@ -57,15 +58,28 @@ export default function Contato() {
                 href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[15px] font-light tabular-nums text-ink-soft transition-colors duration-300 hover:text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-4"
+                className="text-[15px] font-medium tabular-nums text-ink-soft transition-colors duration-300 hover:text-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-4"
               >
                 {WHATSAPP_NUMERO}
               </a>
             </div>
 
-            <p className="mt-10 text-[13.5px] font-light text-ink-mute">
+            <p className="mt-8 text-[13px] text-ink-mute sm:mt-10 sm:text-[13.5px]">
               Atendimento presencial, a domicílio e online.
             </p>
+
+            {/*
+              O mascote fecha a pagina convidando. No celular ele entra em
+              FLUXO, embaixo do texto: posicionado de forma absoluta ele
+              cobria a linha "Atendimento presencial...". Da largura sm para
+              cima sobra canto, e ai ele volta a flutuar no rodape do cartao.
+            */}
+            <Mascote largura={104} alt="" className="mx-auto mt-8 sm:hidden" />
+            <Mascote
+              largura={128}
+              alt=""
+              className="pointer-events-none absolute -bottom-1 right-4 hidden opacity-90 sm:block"
+            />
           </div>
         </Reveal>
       </div>

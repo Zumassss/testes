@@ -39,34 +39,34 @@ const MARCOS = [
 
 export default function Trajetoria() {
   return (
-    <section className="relative pb-24 sm:pb-32 lg:pb-40">
+    <section className="relative pb-16 sm:pb-24 lg:pb-36">
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-        <div className="rounded-[2rem] border border-sage-200/70 bg-white/50 px-7 py-12 backdrop-blur-sm sm:rounded-[2.5rem] sm:px-12 sm:py-16 lg:px-16 lg:py-20">
+        <div className="rounded-[1.5rem] border border-cream-300/70 bg-cream-100/60 px-5 py-10 sm:rounded-[2.5rem] sm:px-10 sm:py-14 lg:px-16 lg:py-20">
           <SectionHead
             label="Trajetória"
             title="Quase quatro décadas entre o ensino e o cuidado."
           />
 
-          <ol className="relative mt-14 max-w-3xl">
+          <ol className="relative mt-9 max-w-3xl sm:mt-12">
             <span
-              className="absolute bottom-3 left-[7px] top-3 w-px bg-gradient-to-b from-brand-400/70 via-sage-300 to-transparent"
+              className="absolute bottom-3 left-[7px] top-3 w-px bg-gradient-to-b from-brand-500 via-brand-300 to-transparent"
               aria-hidden="true"
             />
 
             {MARCOS.map(({ marco, texto }, i) => (
-              <Reveal as="li" key={marco} delay={i * 60} className="relative flex gap-6 pb-11 last:pb-0 sm:gap-8">
+              <Reveal as="li" key={marco} delay={i * 60} className="relative flex gap-4 pb-8 last:pb-0 sm:gap-8 sm:pb-11">
                 <span
-                  className="relative z-10 mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border border-brand-400 bg-page"
+                  className="relative z-10 mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border border-brand-500 bg-page"
                   aria-hidden="true"
                 >
-                  <span className="absolute inset-[3.5px] rounded-full bg-brand-500" />
+                  <span className="absolute inset-[3.5px] rounded-full bg-brand-600" />
                 </span>
 
                 <div>
-                  <h3 className="font-display text-[1.45rem] font-semibold leading-none tracking-[-0.01em] text-brand-600 tabular-nums">
+                  <h3 className="font-display text-[1.15rem] font-semibold leading-none tracking-[-0.01em] text-brand-800 tabular-nums sm:text-[1.4rem]">
                     {marco}
                   </h3>
-                  <p className="mt-3 max-w-xl text-[15.5px] font-light leading-[1.72] text-ink-soft">
+                  <p className="mt-2 max-w-xl text-[13.5px] leading-[1.62] text-ink-soft sm:mt-3 sm:text-[15px] sm:leading-[1.72]">
                     {texto}
                   </p>
                 </div>
