@@ -138,9 +138,12 @@ const ease = (t) => t * t * t * (t * (t * 6 - 15) + 10)
    Sylvius e o cerebelo aparecem, ou seja, onde o objeto se le como cerebro. */
 const REST_YAW = -1.6
 
-/* folga entre o cerebro e a borda direita, em fracao da largura da janela.
-   Quanto maior, mais para a esquerda ele fica. */
-const GUTTER = 0.155
+/* Folga entre o cerebro e a borda direita, em fracao da largura da janela —
+   quanto maior, mais para a esquerda ele fica.
+   0.0885 poe o centro da nuvem a 74.8% da largura, que e o meio da coluna
+   livre a direita do texto. O valor saiu de medir o centro real em varios
+   quadros: o cerebro oscila, entao um quadro so nao representa. */
+const GUTTER = 0.0885
 
 function BrainParticles({ count, interactive, reducedMotion, pointSize, progressRef }) {
   const groupRef = useRef()
@@ -223,7 +226,9 @@ function BrainParticles({ count, interactive, reducedMotion, pointSize, progress
   }, [gl, interactive])
 
   // Repouso: coluna da direita, centrado na vertical do hero.
-  const restY = -0.3
+  // -0.24 poe o centro da nuvem na altura media da coluna livre; em -0.3 ela
+  // ficava 16px abaixo do centro do espaco disponivel.
+  const restY = -0.24
   const baseScale = 1.0
 
   // destino no fim do scroll: desce para fora do enquadramento, deixando so
