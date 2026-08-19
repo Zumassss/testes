@@ -4,10 +4,10 @@
  * O restante (e-mail, endereco e redes) ainda nao foi informado — por isso
  * nao existe aqui. Nada foi preenchido por suposicao.
  */
-export const WHATSAPP_NUMERO = '+55 27 99761-9792'
+export const WHATSAPP_NUMERO = '+55 27 99927-7207'
 
 /* formato exigido pelo wa.me: so digitos, com DDI */
-const WHATSAPP_E164 = '5527997619792'
+const WHATSAPP_E164 = '5527999277207'
 
 const MENSAGEM =
   'Olá, Janaina! Vim pelo site da Music’art e gostaria de conversar sobre musicoterapia.'

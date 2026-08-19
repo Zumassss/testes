@@ -165,7 +165,7 @@ O que continua valendo na cena 3D:
 
 ## Pendências antes de ir ao ar
 
-- [x] ~~WhatsApp~~ — `+55 27 99761-9792`, em `src/lib/contato.js`. O botão
+- [x] ~~WhatsApp~~ — `+55 27 99927-7207`, em `src/lib/contato.js`. O botão
       abre o wa.me já com uma mensagem preenchida.
 - [ ] **E-mail, endereço e redes sociais.** Ainda não informados, então não
       aparecem em lugar nenhum. Quando chegarem, entram em
