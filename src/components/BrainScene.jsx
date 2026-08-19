@@ -138,8 +138,9 @@ const ease = (t) => t * t * t * (t * (t * 6 - 15) + 10)
    Sylvius e o cerebelo aparecem, ou seja, onde o objeto se le como cerebro. */
 const REST_YAW = -1.6
 
-/* folga entre o cerebro e a borda direita, em fracao da largura da janela */
-const GUTTER = 0.105
+/* folga entre o cerebro e a borda direita, em fracao da largura da janela.
+   Quanto maior, mais para a esquerda ele fica. */
+const GUTTER = 0.155
 
 function BrainParticles({ count, interactive, reducedMotion, pointSize, progressRef }) {
   const groupRef = useRef()

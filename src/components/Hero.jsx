@@ -8,7 +8,26 @@ import Mascote from './Mascote.jsx'
  */
 export default function Hero({ mobile = false }) {
   const texto = (
-    <div className={mobile ? 'w-full' : 'hero-fade w-full lg:w-[52%]'}>
+    <div
+      className={
+        mobile ? 'w-full' : 'hero-fade relative w-full lg:w-[52%]'
+      }
+    >
+      {/* Veu atras do texto. Com o cerebro deslocado para a esquerda, o
+          titulo passa por cima da parte densa da nuvem; esta elipse da cor
+          da propria pagina rareia os pontos so ali, sem borda visivel e sem
+          blur — e um degrade, entao nao custa quadro. */}
+      {!mobile && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-x-8 -inset-y-10 -z-[5] hidden lg:block"
+          style={{
+            background:
+              'radial-gradient(58% 48% at 34% 46%, rgba(252,244,231,0.92) 0%, rgba(252,244,231,0.72) 45%, rgba(252,244,231,0) 78%)',
+          }}
+        />
+      )}
+
       <div className="flex items-center gap-2.5">
         <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-60" />
